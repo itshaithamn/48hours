@@ -25,4 +25,7 @@ yarn-error.log*
 __pycache__
 venv
 .idea
-.vscode
+.vscode/
+settings.json
+launch.json
+tasks.json
