@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-
+import React, {useEffect, useRef} from 'react';
+import styles from './Home.module.css'
 
 function Playground() {
 
@@ -48,21 +48,19 @@ function Playground() {
     container.addEventListener('mousemove', onMouseMove);
     container.addEventListener('mouseleave', onMouseUp);
 
-    const cleanup = () => {
+    return () => {
       box.removeEventListener('mousedown', onMouseDown);
       box.removeEventListener('mouseup', onMouseUp);
       container.removeEventListener('mousemove', onMouseMove);
       container.removeEventListener('mouseleave', onMouseUp);
-    }
-
-    return cleanup;
+    };
   }, [])
 
   return (
     <div className="main">
         <h1>Playground</h1>
-      <div ref={containerRef} className="container">
-        <div ref={boxRef} className="box"></div>
+      <div ref={containerRef} className={styles.container}>
+        <div ref={boxRef} className={styles.box}></div>
       </div>
     </div>
   );
