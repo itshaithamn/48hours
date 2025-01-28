@@ -4,6 +4,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import './global.css'
 import styles from './Home.module.css';
  import Navbar from './Navbar'
+import { Link } from 'react-router-dom';
 
 const Home = () => {
   return (
@@ -12,12 +13,15 @@ const Home = () => {
               <Navbar />
               <header>
                   <h1>Leak Test </h1>
+                  <Link to="/">
                   <HomeIcon style={{fontSize: 50, top: 6}}/>
+                  </Link>
               </header>
               <div className={styles.divCta}>
                   <p className={styles.centeredText}>Discover the features of our leak tester <br/> and start testing
                       your system now.</p>
                   <div>
+                    <Link to="/Login">
                       <Button style={{
                           fontSize: 30,                          color: 'white',
                           backgroundColor: '#282c34',
@@ -25,6 +29,8 @@ const Home = () => {
                           cursor: 'pointer',
                           margin: '2rem'
                       }}>Log In Here</Button>
+                      </Link>
+                     
                       <Button style={{
                           fontSize: 30,
                           color: 'white',
