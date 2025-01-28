@@ -77,7 +77,7 @@ function Playground() {
           <div className={playgroundStyles.fileui}>
             <h1>Test</h1>
           </div>
-          <div className={playgroundStyles.toolbox}></div>
+          <div className={playgroundStyles.toolbar}></div>
         </div>
       </>
   );

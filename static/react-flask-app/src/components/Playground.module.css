@@ -22,16 +22,17 @@
 }
 
 .fileui {
-    position: absolute;
+    position: relative;
     display: flex;
     height: 650px;
     width: 200px;
     background-color: white;
     top: 24vh;
     left: 80px;
+    overflow: hidden;
 }
 
-.toolbox {
+.toolbar {
     position: absolute;
     display: flex;
     background-color: white;
