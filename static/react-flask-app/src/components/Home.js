@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import {Button, GlobalStyles} from '@mui/material';
+import {Button} from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import './global.css'
 import styles from './Home.module.css';
@@ -11,13 +11,12 @@ const Home = () => {
           <div className={styles.App}>
               <header>
                   <h1>Leak Test </h1>
-                <Link to="/home"  style={{ textDecoration: 'none' }}>
+                  <Link to="/home"  style={{ textDecoration: 'none' }}>
                   <HomeIcon style={{fontSize: 50, top: 6}}/>
                   </Link>
               </header>
               <div className={styles.divCta}>
-                  <p className={styles.centeredText}>Discover the features of our leak tester <br/> and start testing
-                      your system now.</p>
+                  <p className={styles.centeredText}>Discover the features of our leak tester <br/> and start testing your system now.</p>
                   <div>
                     <Link to="/"  style={{ textDecoration: 'none' }}>
                       <Button style={{

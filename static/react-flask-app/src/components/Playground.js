@@ -57,12 +57,14 @@ function Playground() {
   }, [])
 
   return (
-    <div className="main">
-        <h1>Playground</h1>
-      <div ref={containerRef} className={styles.container}>
-        <div ref={boxRef} className={styles.box}></div>
-      </div>
-    </div>
+      <>
+        <div className="main">
+          <h1>Playground</h1>
+          <div ref={containerRef} className={styles.container}>
+            <div ref={boxRef} className={styles.box}></div>
+          </div>
+        </div>
+      </>
   );
 }
 
