@@ -64,17 +64,20 @@ function Playground() {
       <>
         <div className={homeStyles.App}>
           <header>
-            <h1>Leak Test</h1>
-            <Link to="/" style={{ textDecoration: 'none' }}>
+            <h1>PlayGround</h1>
+            <Link to="/" style={{textDecoration: 'none'}}>
               <HomeIcon style={{fontSize: 50, top: 6}}/>
             </Link>
           </header>
           <div className={playgroundStyles.playgroundDiv}>
-            <h1 style={{color: 'white', margin: '30px auto'}}>Playground</h1>
             <div ref={containerRef} className={playgroundStyles.container}>
               <div ref={boxRef} className={playgroundStyles.box}></div>
             </div>
           </div>
+          <div className={playgroundStyles.fileui}>
+            <h1>Test</h1>
+          </div>
+          <div className={playgroundStyles.toolbox}></div>
         </div>
       </>
   );

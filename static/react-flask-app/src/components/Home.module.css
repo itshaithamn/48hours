@@ -2,6 +2,7 @@
   width:100%;
   height: 100vh;
   justify-content: center;
+  position: relative;
   align-items: center;
   text-align: center;
   background-image: url('../media/wp3287711-professional-wallpaper.jpg');
@@ -32,28 +33,4 @@
   justify-content: center;
   align-items: center;
   color:white;
-}
-
-.container {
-  position: relative;
-  border: 1px solid black;
-  background-color:#212228;
-  background-image: linear-gradient(#292a30 .1em, transparent .1em), 
-  linear-gradient(90deg, #292a30 .1em, transparent .1em);
-  background-size: 4em 4em;
-  height: 650px;
-  width: 800px;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.box {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: hotpink;
-  height: 60px;
-  width: 60px;
-  cursor: pointer;
 }
