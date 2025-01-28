@@ -1,5 +1,9 @@
 import React, {useEffect, useRef} from 'react';
-import styles from './Home.module.css'
+import HomeIcon from '@mui/icons-material/Home'
+import './global.css'
+import homeStyles from './Home.module.css'
+import playgroundStyles from './Playground.module.css'
+import {Link} from "react-router-dom";
 
 function Playground() {
 
@@ -58,10 +62,18 @@ function Playground() {
 
   return (
       <>
-        <div className="main">
-          <h1>Playground</h1>
-          <div ref={containerRef} className={styles.container}>
-            <div ref={boxRef} className={styles.box}></div>
+        <div className={homeStyles.App}>
+          <header>
+            <h1>Leak Test</h1>
+            <Link to="/" style={{ textDecoration: 'none' }}>
+              <HomeIcon style={{fontSize: 50, top: 6}}/>
+            </Link>
+          </header>
+          <div className={playgroundStyles.playgroundDiv}>
+            <h1 style={{color: 'white', margin: '30px auto'}}>Playground</h1>
+            <div ref={containerRef} className={playgroundStyles.container}>
+              <div ref={boxRef} className={playgroundStyles.box}></div>
+            </div>
           </div>
         </div>
       </>

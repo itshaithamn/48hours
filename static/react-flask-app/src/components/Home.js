@@ -12,7 +12,7 @@ const Home = () => {
               <header>
                   <h1>Leak Test </h1>
                   <Link to="/home"  style={{ textDecoration: 'none' }}>
-                  <HomeIcon style={{fontSize: 50, top: 6}}/>
+                    <HomeIcon style={{fontSize: 50, top: 6}}/>
                   </Link>
               </header>
               <div className={styles.divCta}>
