@@ -4,7 +4,7 @@ app = Flask(__name__, static_folder="../static/react-flask-app/build", static_ur
 
 @app.route('/')
 def hello_world():  # put application's code here
-    return send_from_directory(app.static_folder, "index.html")
+    return send_from_directory(app.static_folder, "Home.js")
 
 if __name__ == '__main__':
     app.run()
