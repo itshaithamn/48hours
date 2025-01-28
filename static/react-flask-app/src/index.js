@@ -3,12 +3,13 @@ import ReactDOM from 'react-dom/client';
 import {BrowserRouter} from "react-router-dom";
 import './index.css';
 import Playground from './components/Playground';
+import App from './components/App';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
       <BrowserRouter>
-          <Playground />
+          <App />
       </BrowserRouter>
   </React.StrictMode>
 );
