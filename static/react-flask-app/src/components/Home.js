@@ -4,13 +4,11 @@ import {Button, GlobalStyles} from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import './global.css'
 import styles from './Home.module.css';
- import Navbar from './Navbar'
 
 const Home = () => {
   return (
       <>
           <div className={styles.App}>
-              <Navbar />
               <header>
                   <h1>Leak Test </h1>
                 <Link to="/home"  style={{ textDecoration: 'none' }}>
