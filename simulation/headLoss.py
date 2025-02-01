@@ -2,8 +2,6 @@ import math
 #Using metric system
 
 g = 9.8
-laminarFlow = False
-turbulentFlow = False
 
 #testing:
 velocity = 1
