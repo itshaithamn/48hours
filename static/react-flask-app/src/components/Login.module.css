@@ -1,0 +1,18 @@
+.logincontainer{
+    background-color: white;
+    opacity: 0.85;
+    width:45%;
+    height:45%;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+   flex-direction: column;
+   gap: 1rem;
+   border-radius: 1rem;
+  }
+  .Row{
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+  }
