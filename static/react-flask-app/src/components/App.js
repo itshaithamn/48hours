@@ -2,7 +2,7 @@ import React from 'react';
 import {Route, Routes} from "react-router-dom";
 import Playground from "./Playground";
 import Home from "./Home";
-import Login from './login';
+import Login from './Login';
 
 
 function App()  {
