@@ -6,6 +6,22 @@ import './global.css'
 import homeStyles from './Home.module.css';
 
 const Home = () => {
+    const sendData = async () => {
+    const data = { key1: "value1", key2: "value2" };  // Example data
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/receive_data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        console.log("Server Response:", result);
+    } catch (error) {
+        console.error("Error sending data:", error);
+    }};
+
   return (
       <>
           <div className={homeStyles.App}>
@@ -18,23 +34,23 @@ const Home = () => {
               <div className={homeStyles.divCta}>
                   <p className={homeStyles.centeredText}>Discover the features of our leak tester <br/> and start testing your system now.</p>
                   <div>
-                    <Link to="/Login"  style={{ textDecoration: 'none' }}>
-                      <Button style={{
-                          fontSize: 30,                          color: 'white',
-                          backgroundColor: '#282c34',
-                          borderRadius: 15,
-                          cursor: 'pointer',
-                          margin: '2rem'
-                      }}>Log In Here</Button>
+                      <Link to="/Login" style={{textDecoration: 'none'}}>
+                          <Button style={{
+                              fontSize: 30, color: 'white',
+                              backgroundColor: '#282c34',
+                              borderRadius: 15,
+                              cursor: 'pointer',
+                              margin: '2rem'
+                          }}>Log In Here</Button>
                       </Link>
-                      <Link to="/playground"   style={{ textDecoration: 'none' }}>
-                      <Button style={{
-                          fontSize: 30,                          color: 'white',
-                          backgroundColor: '#282c34',
-                          borderRadius: 15,
-                          cursor: 'pointer',
-                          margin: '2rem'
-                      }}>Playground</Button>
+                      <Link to="/playground" style={{textDecoration: 'none'}}>
+                          <Button style={{
+                              fontSize: 30, color: 'white',
+                              backgroundColor: '#282c34',
+                              borderRadius: 15,
+                              cursor: 'pointer',
+                              margin: '2rem'
+                          }}>Playground</Button>
                       </Link>
                       <Button style={{
                           fontSize: 30,
@@ -44,6 +60,9 @@ const Home = () => {
                           cursor: 'pointer',
                           margin: '2rem'
                       }}>Sign Up Here</Button>
+                      <Button onClick={sendData} style={{padding: "10px", fontSize: "16px", cursor: "pointer"}}>
+                          Send Data
+                      </Button>
                   </div>
               </div>
           </div>

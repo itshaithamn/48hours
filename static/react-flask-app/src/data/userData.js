@@ -1,6 +1,21 @@
-// All data recieved to Playground.js from the user goes here before going to Flask to be output
+document.addEventListener("DOMContentLoaded", () => {
+    const container = document.createElement("div");
+    container.style.display = "flex";
+    container.style.justifyContent = "center";
+    container.style.alignItems = "center";
+    container.style.height = "100vh";
 
- //Bullsit ChatGPT code, it never works
+    const button = document.createElement("button");
+    button.innerText = "Send Data";
+    button.style.padding = "10px";
+    button.style.fontSize = "16px";
+    button.style.cursor = "pointer";
+    button.addEventListener("click", sendData);
+
+    container.appendChild(button);
+    document.body.appendChild(container);
+});
+
 const sendData = async () => {
     const data = { key1: "value1", key2: "value2" };  // Example data
 
@@ -17,6 +32,3 @@ const sendData = async () => {
         console.error("Error sending data:", error);
     }
 };
-
-// Call the function to send data
-sendData();

@@ -16,5 +16,9 @@ def receive_data():
           print("Error:", str(e))
           return jsonify({"error": "Invalid request"}), 400
 
+@app.route('/')
+def hello_world():
+     return send_from_directory("../static/react-flask-app/build", "index.html")
+
 if __name__ == '__main__':
-     app.run(debug=True)
+     app.run()
