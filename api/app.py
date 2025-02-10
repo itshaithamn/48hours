@@ -1,24 +1,24 @@
-from flask import Flask, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory
+
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder="../static/react-flask-app/build", static_url_path="/")
+CORS(app)
+
+
+
+@app.route('/receive_data', methods=['POST'])
+def receive_data():
+     try:
+          data = request.json  # Get JSON data from request
+          return jsonify({"message": "Data received successfully", "data": data}), 200
+     except Exception as e:
+          print("Error:", str(e))
+          return jsonify({"error": "Invalid request"}), 400
 
 @app.route('/')
-def hello_world():  # put application's code here
-    return send_from_directory(app.static_folder, "index.html")
+def hello_world():
+     return send_from_directory("../static/react-flask-app/build", "index.html")
 
 if __name__ == '__main__':
-    app.run()
-
-
-# from flask import Flask, request, jsonify
-#
-# app = Flask(__name__)
-#
-# @app.route('/receive_data', methods=['POST'])
-# def receive_data():
-#     data = request.json  # Get JSON data from request
-#     print("Received Data:", data)
-#     return jsonify({"message": "Data received", "data": data})
-#
-# if __name__ == '__main__':
-#     app.run(debug=True)
+     app.run()
