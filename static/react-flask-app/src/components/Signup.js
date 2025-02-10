@@ -1,15 +1,15 @@
 import React from 'react';
  import TextField from '@mui/material/TextField';
- import LockIcon from '@mui/icons-material/Lock'; 
- import PersonIcon from '@mui/icons-material/Person'; 
- import { Button } from '@mui/material'; 
+ import LockIcon from '@mui/icons-material/Lock';
+ import PersonIcon from '@mui/icons-material/Person';
+ import { Button } from '@mui/material';
  import homeStyles from './Home.module.css'
  import login from './Login.module.css'
 import "./global.css"
 import {Link} from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 
- function Login() {   
+ function Signup() {
     return (
         <>
             <div className={homeStyles.App}>
@@ -39,4 +39,4 @@ import HomeIcon from "@mui/icons-material/Home";
         </>);
  }
 
-export default Login;
+export default Signup;
