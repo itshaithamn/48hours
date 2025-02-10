@@ -11,7 +11,7 @@ const Home = () => {
           <div className={homeStyles.App}>
               <header>
                   <h1>Leak Test </h1>
-                  <Link to="/home"  style={{ textDecoration: 'none' }}>
+                  <Link to="/Home"  style={{ textDecoration: 'none' }}>
                     <HomeIcon style={{fontSize: 50, top: 6}}/>
                   </Link>
               </header>
@@ -27,7 +27,7 @@ const Home = () => {
                           margin: '2rem'
                       }}>Log In Here</Button>
                       </Link>
-                      <Link to="/playground"   style={{ textDecoration: 'none' }}>
+                      <Link to="/Playground"   style={{ textDecoration: 'none' }}>
                       <Button style={{
                           fontSize: 30,                          color: 'white',
                           backgroundColor: '#282c34',
@@ -36,14 +36,17 @@ const Home = () => {
                           margin: '2rem'
                       }}>Playground</Button>
                       </Link>
-                      <Button style={{
+                      <Link to="/Signup"   style={{ textDecoration: 'none' }}>
+                          <Button style={{
                           fontSize: 30,
                           color: 'white',
                           backgroundColor: '#282c34',
                           borderRadius: 15,
                           cursor: 'pointer',
-                          margin: '2rem'
-                      }}>Sign Up Here</Button>
+                          margin: '2rem'}}>
+                              Sign Up Here
+                          </Button>
+                      </Link>
                   </div>
               </div>
           </div>
