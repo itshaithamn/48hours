@@ -30,7 +30,9 @@ import HomeIcon from "@mui/icons-material/Home";
                         <TextField id="outlined-basic" label="Password" variant="outlined"/>
                     </div>
                     <div>
+                        <Link to ="/">
                         <Button size='large'>Login</Button>
+                        </Link>
                     </div>
                 </div>
             </div>
