@@ -22,6 +22,7 @@ const Home = () => {
         console.error("Error sending data:", error);
     }};
 
+
   return (
       <>
           <div className={homeStyles.App}>
@@ -60,7 +61,12 @@ const Home = () => {
                           cursor: 'pointer',
                           margin: '2rem'
                       }}>Sign Up Here</Button>
-                      <Button onClick={sendData} style={{padding: "10px", fontSize: "16px", cursor: "pointer"}}>
+                      <Button onClick={sendData} style={{
+                              fontSize: 30, color: 'white',
+                              backgroundColor: '#282c34',
+                              borderRadius: 15,
+                              cursor: 'pointer',
+                              margin: '2rem'}}>
                           Send Data
                       </Button>
                   </div>
