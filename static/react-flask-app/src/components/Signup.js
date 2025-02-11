@@ -20,7 +20,7 @@ import HomeIcon from "@mui/icons-material/Home";
                     </Link>
                 </header>
                 <div className={login.loginContainer}>
-                    <h1>Login Here</h1>
+                    <h1>Sign Up Here</h1>
                     <div className={login.Row}>
                         <PersonIcon/>
                         <TextField id="outlined-basic" label="Username" variant="outlined"/>
@@ -31,7 +31,7 @@ import HomeIcon from "@mui/icons-material/Home";
                     </div>
                     <div>
                         <Link to ="/">
-                        <Button size='large'>Login</Button>
+                        <Button size='large'>Sign Up</Button>
                         </Link>
                     </div>
                 </div>

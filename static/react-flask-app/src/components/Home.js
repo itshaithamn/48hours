@@ -44,6 +44,33 @@ const Home = () => {
                               margin: '2rem'
                           }}>Log In Here</Button>
                       </Link>
+                      <Link to="/playground" style={{textDecoration: 'none'}}>
+                          <Button style={{
+                              fontSize: 30, color: 'white',
+                              backgroundColor: '#282c34',
+                              borderRadius: 15,
+                              cursor: 'pointer',
+                              margin: '2rem'
+                          }}>Playground</Button>
+                      </Link>
+                      <Link to="/signup" style={{textDecoration: 'none'}}>
+                          <Button style={{
+                          fontSize: 30,
+                          color: 'white',
+                          backgroundColor: '#282c34',
+                          borderRadius: 15,
+                          cursor: 'pointer',
+                          margin: '2rem'
+                          }}>Sign Up Here</Button>
+                      </Link>
+                      <Button onClick={sendData} style={{
+                              fontSize: 30, color: 'white',
+                              backgroundColor: '#282c34',
+                              borderRadius: 15,
+                              cursor: 'pointer',
+                              margin: '2rem'}}>
+                          Send Data
+                      </Button>
                   </div>
               </div>
           </div>
