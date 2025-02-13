@@ -27,7 +27,7 @@ const Home = () => {
       <>
           <div className={homeStyles.App}>
               <header>
-                  <h1>Leak Test </h1>
+                  <h1>Spl@sh</h1>
                   <Link to="/Home"  style={{ textDecoration: 'none' }}>
                     <HomeIcon style={{fontSize: 50, top: 6}}/>
                   </Link>
