@@ -23,11 +23,11 @@ import HomeIcon from "@mui/icons-material/Home";
                     <h1>Login Here</h1>
                     <div className={login.Row}>
                         <PersonIcon/>
-                        <TextField id="outlined-basic" label="Username" variant="outlined"/>
+                        <TextField id="outlined-basic" required label="Username" variant="outlined"/>
                     </div>
                     <div className={login.Row}>
                         <LockIcon/>
-                        <TextField id="outlined-basic" label="Password" variant="outlined"/>
+                        <TextField id="outlined-basic" required label="Password" variant="outlined"/>
                     </div>
                     <div>
                         <Link to ="/">
