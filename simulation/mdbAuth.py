@@ -2,7 +2,7 @@ import mysql.connector
 import bcrypt
 
 class MariaDBAuth:
-    def __init__(self, host="34.228.55.178", user="FourtyEightHours", password="test1234", database="CSI2999"):
+    def __init__(self, host="107.21.218.63", user="FourtyEightHours", password="test1234", database="CSI2999"):
         """Connect to the MariaDB database."""
         self.conn = mysql.connector.connect(
             host=host,
