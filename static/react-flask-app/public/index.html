@@ -14,4 +14,49 @@
   <body>
     <div id="root"></div>
   </body>
+  <!-- <body>
+<script type="module">
+import * as THREE from "../modules/three.module. js";
+import { OrbitControls } from "../modules/OrbitControls.js"; 
+import {DragControls } from '../DragControls. js';
+const scene = new THREE.Scene();
+scene.background = new THREE. CubeTextureLoader() // create new CubeTextureLoader
+setPath('../skybox/') // all images in the stybox folder in directory
+.load( [
+'nightsky_ft.png', // pos X
+'nightsky_bk.png', // neg x
+"nightsky_up-png",
+, // pos y
+'nightsky_dn.png', // neg y
+'nightsky_rt.png', // pos 2
+'nightsky_If.png',
+]);
+const gridhelper = new THREE.GridHelper( 50, 10, 0x000000, 0xffffff); // 500/10 = 50 unit
+scene. add ( gridHelper );
+const groundGeo = new THREE.PlaneGeometry (50, 50 );
+const groundMat = new THREE. MeshPhongMaterial ({ color: 0x00ff00 });
+const cubes = new THREE.Group();
+const Geometry = new THREE. BoxGeometry(5, 5, 5);
+const Material = new THREE.MeshStandardMaterial ( {color: 0x00ffff});
+cube.position. set (5, 2.5, 5);
+cubes.add (cube);
+scene. add (cubes);
+const dControls =new DragControls (cubes-children, camera, renderer, domElement);
+Controls. addEventListener ('dragstart', function (event) {
+Controls.enabled = false; // disable orbit controls while dragging
+//event.object.material. wicefcane = true;
+});
+Controls. addEventListener ('dragend', function(event) {
+//event.object.material wicefcome = false;
+Controls.enabled = true;
+});
+dControls.addEventListener('hoveron', function (event) { // works
+//event.object.material. wicefcome = true;
+3});
+dControls.addEventListener('hoveroff', function(event) { // works
+//event. object. material. wicefcame = false;
+});
+</script>
+</body> -->
+
 </html>
