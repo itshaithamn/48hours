@@ -33,15 +33,20 @@ const Scene = () => {
         cameraRef.current = camera;
 
         // Create renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         mountRef.current.innerHTML = "";
         mountRef.current.appendChild(renderer.domElement);
         rendererRef.current = renderer;
 
+        // Grid properties
+        const gridSize = 10;
+        const gridDivisions = 10;
+        const cellSize = gridSize / gridDivisions;
+
         // Add grid helper
-        const gridHelper = new THREE.GridHelper(10, 10, 0xffffff, 0x555555);
+        const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0xffffff, 0x555555);
         scene.add(gridHelper);
 
         // Add orbit controls
@@ -52,13 +57,26 @@ const Scene = () => {
         orbitControls.maxDistance = 20;
         orbitControlsRef.current = orbitControls;
 
-        // Create a draggable cube
-        const geometry = new THREE.BoxGeometry();
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(0, 0.5, 0);
-        scene.add(cube);
-        objectsRef.current = [cube];
+        // Add lighting for better visibility
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        // Create a "test tube" shape (CylinderGeometry)
+        const geometry = new THREE.CylinderGeometry(0.3, 0.3, 2, 32);
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0x00ffff, 
+            transparent: true, 
+            opacity: 0.7,
+            shininess: 100
+        });
+        const testTube = new THREE.Mesh(geometry, material);
+        testTube.position.set(0, 1, 0);
+        scene.add(testTube);
+        objectsRef.current = [testTube];
 
         // Initialize DragControls
         if (controlsRef.current) {
@@ -67,21 +85,31 @@ const Scene = () => {
         const dragControls = new DragControls(objectsRef.current, camera, renderer.domElement);
         controlsRef.current = dragControls;
 
-        // Restrict movement within boundaries
+        // Restrict movement and snap to grid square centers on drop
         dragControls.addEventListener("drag", (event) => {
             const object = event.object;
-            const minX = -5, maxX = 5;
-            const minZ = -5, maxZ = 5;
+            const minX = -gridSize / 2, maxX = gridSize / 2;
+            const minZ = -gridSize / 2, maxZ = gridSize / 2;
 
             // Restrict movement within the grid area
             object.position.x = Math.max(minX, Math.min(maxX, object.position.x));
             object.position.z = Math.max(minZ, Math.min(maxZ, object.position.z));
 
-            // Keep cube on top of the grid (do not allow lifting)
-            object.position.y = 0.5; 
+            // Keep test tube floating above the grid
+            object.position.y = 1; 
         });
 
-        // Disable orbiting when dragging
+        // Snap to nearest grid square **center** when dropping
+        dragControls.addEventListener("dragend", (event) => {
+            const object = event.object;
+
+            // Offset snapping by half a grid cell so it lands in the **center** of a square
+            object.position.x = Math.round(object.position.x / cellSize) * cellSize + cellSize / 2;
+            object.position.z = Math.round(object.position.z / cellSize) * cellSize + cellSize / 2;
+            object.position.y = 1; // Keep it above the grid
+        });
+
+        // Disable orbiting while dragging
         dragControls.addEventListener("dragstart", () => {
             orbitControls.enabled = false;
         });
