@@ -44,7 +44,7 @@ const Home = () => {
                               margin: '2rem'
                           }}>Log In Here</Button>
                       </Link>
-                      <Link to="/playground" style={{textDecoration: 'none'}}>
+                      <Link to="/scene" style={{textDecoration: 'none'}}>
                           <Button style={{
                               fontSize: 30, color: 'white',
                               backgroundColor: '#282c34',
