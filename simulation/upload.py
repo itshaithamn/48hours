@@ -31,6 +31,21 @@ class MariaDBFileUpload:
         self.cursor.execute(query)
         self.conn.commit()
 
+
+    def add_filepath_to_database(self, file_path, author_id):
+
+        filename = os.path.basename(file_path)
+        filepath = "/var/lib/mariadb_files/" + filename
+
+        query = "INSERT INTO files (id, filename, filepath) VALUES (%s, %s, %s)"
+        try:
+            self.cursor.execute(query, (author_id, filename, filepath))
+            self.conn.commit()
+            print(f"File {filename} from {author_id} has been added to database at {filepath}")
+
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+
     def send_file(self, host, port_no, file_path):
         if not os.path.isfile(file_path):
             print(f"[!] File not found: {file_path}")
@@ -69,8 +84,4 @@ if __name__ == "__main__":
     # test run.. usage: send_file(host_ip, port, 'path/to/local/file'
     db.send_file(host_ip, port, "C:\\Users\\Devin\\Desktop\\OU\\Winter25\\CSI2999\\test_file.txt")
 
-
-
-
-
-
+    db.add_filepath_to_database("C:\\Users\\Devin\\Desktop\\OU\\Winter25\\CSI2999\\test_file.txt", 5)
