@@ -1,33 +1,32 @@
-import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import jsonData from "./3dfile.json";
-import scene from "../Scene";
+import { useEffect, useRef } from "react"
 
 const Save = () => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    const loader = new THREE.ObjectLoader();
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // light and camera position provided by your friend at chat.com/ihateai
+    camera.position.set(0, 0, 200);
+    camera.lookAt(0, 0, 0);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    // Parse the imported JSON data to create a Three.js object
+    var renderer = new THREE.WebGLRenderer();
+    var loader = new THREE.ObjectLoader();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // parse the imported JSON data to create object
     const loadedObject = loader.parse(jsonData);
     scene.add(loadedObject);
-
-    // Append the renderer's canvas to the container div
-    if (containerRef.current && renderer) {
-      containerRef.current.appendChild(renderer.domElement);
-    }
+    // container div type
+    containerRef.current && containerRef.current.appendChild( renderer.domElement);
+    renderer.render(scene, camera);
   }, []);
 
   return (
-    <div
-      id="scene-container"
-      ref={containerRef}
-      style={{ width: "100%", height: "100vh" }}
-    >
-      <h1>hello</h1>
-    </div>
+    <div ref={containerRef} style={{ width: "100vw", height: "100vh", overflow: "hidden" }}></div>
   );
 };
 
