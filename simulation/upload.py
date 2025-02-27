@@ -77,13 +77,14 @@ class MariaDBFileUpload:
         client_socket.close()
 
 
-
+#TEST
 if __name__ == "__main__":
     db = MariaDBFileUpload()
 
     # test run.. usage: send_file(host_ip, port, 'path/to/local/file'
     db.send_file(host_ip, port, "C:\\Users\\Devin\\Desktop\\OU\\Winter25\\CSI2999\\test_file.txt")
 
+    # test run.. usage: add_filepath_to_database('path/to/local/file', author_id)
     db.add_filepath_to_database("C:\\Users\\Devin\\Desktop\\OU\\Winter25\\CSI2999\\test_file.txt", 5)
 
 
