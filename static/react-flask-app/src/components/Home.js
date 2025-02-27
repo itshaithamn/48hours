@@ -71,6 +71,15 @@ const Home = () => {
                               margin: '2rem'}}>
                           Send Data
                       </Button>
+                      <Link to="/save" style={{textDecoration: 'none'}}>
+                          <Button style={{
+                              fontSize: 30, color: 'white',
+                              backgroundColor: '#282c34',
+                              borderRadius: 15,
+                              cursor: 'pointer',
+                              margin: '2rem'
+                          }}>Playground</Button>
+                      </Link>
                   </div>
               </div>
           </div>

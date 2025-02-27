@@ -380,7 +380,7 @@ function onPointerCancel() {
 		this.dispatchEvent( { type: 'dragend', object: _selected } );
 
 		_selected = null;
-
+e
 	}
 
 	this.domElement.style.cursor = _hovered ? 'pointer' : 'auto';
