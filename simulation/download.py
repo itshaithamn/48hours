@@ -104,7 +104,7 @@ if __name__ == "__main__":
     #print(f"User: saved_user_files_list: {user_id}, Filename: {saved_user_files_list[0][0]}, Filepath: {saved_user_files_list[0][1]}, File Date: {saved_user_files_list[0][2]}, File Size: {saved_user_files_list[0][3]}")
 
 
-    db.download_user_file('/var/lib/mariadb_files/test_file.txt', host_ip, port)
+    db.download_user_file('/var/lib/mariadb_files/test_file2.txt', host_ip, port)
 
     #After all is done, terminate connection, ONLY CALL AFTER
     db.terminate_connection()
