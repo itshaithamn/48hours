@@ -94,6 +94,3 @@ if __name__ == "__main__":
 
     # test run.. usage: send_file(host_ip, port, 'path/to/local/file'
     db.send_file(host_ip, port, local_file_path, author)
-
-    # test run.. usage: add_filepath_to_database('path/to/local/file', author_id)
-    db.add_filepath_to_database(local_file_path, author)
