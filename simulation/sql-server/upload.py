@@ -97,9 +97,3 @@ if __name__ == "__main__":
 
     # test run.. usage: add_filepath_to_database('path/to/local/file', author_id)
     db.add_filepath_to_database(local_file_path, author)
-
-
-
-
-
-
