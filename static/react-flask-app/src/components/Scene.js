@@ -5,6 +5,11 @@ import { DragControls } from "three/examples/jsm/controls/DragControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 const Scene = () => {
+    const [testTubePositions, setTestTubePositions] = useState([]);
+const [valvePositions, setValvePositions] = useState([]);
+const [pumpPositions, setPumpPositions] = useState([]);
+const [pipePositions, setPipePositions] = useState([]);
+
     const mountRef = useRef(null);
     const controlsRef = useRef(null);
     const objectsRef = useRef([]);
@@ -118,22 +123,32 @@ const Scene = () => {
     const addObjectToScene = (type, position) => {
         if (!sceneRef.current) return;
         let object;
-
+        const yPosition = 0;
+        const id = Date.now(); // Generate a unique ID for each object
+    
         if (type === "testTube") {
             object = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.3, 0.3, 2, 32),
                 new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.7, shininess: 100 })
             );
+            setTestTubePositions((prev) => [
+                ...prev,
+                { id, position: { x: position.x, y: yPosition, z: position.z } },
+            ]);
         } else if (type === "valve") {
             const loader = new GLTFLoader();
             loader.load(
-                "/uploads-files-2965933-valveAssem.glb", // Adjust the path as needed
+                "/uploads-files-2965933-valveAssem.glb",
                 (gltf) => {
                     const valve = gltf.scene;
-                    valve.position.set(position.x, 1, position.z);
-                    valve.scale.set(0.003, 0.003, 0.005);  // Adjust scale if needed
+                    valve.position.set(position.x, yPosition, position.z);
+                    valve.scale.set(0.003, 0.003, 0.005);
                     sceneRef.current.add(valve);
                     objectsRef.current.push(valve);
+                    setValvePositions((prev) => [
+                        ...prev,
+                        { id, position: { x: position.x, y: yPosition, z: position.z } },
+                    ]);
                 },
                 undefined,
                 (error) => console.error("Error loading valve model:", error)
@@ -145,10 +160,14 @@ const Scene = () => {
                 "/uploads_files_2431043_pump.glb",
                 (gltf) => {
                     const pump = gltf.scene;
-                    pump.position.set(position.x, 1, position.z);
-                    pump.scale.set(0.005, 0.005, 0.005); 
+                    pump.position.set(position.x, yPosition, position.z);
+                    pump.scale.set(0.005, 0.005, 0.005);
                     sceneRef.current.add(pump);
                     objectsRef.current.push(pump);
+                    setPumpPositions((prev) => [
+                        ...prev,
+                        { id, position: { x: position.x, y: yPosition, z: position.z } },
+                    ]);
                 },
                 undefined,
                 (error) => console.error("Error loading pump model:", error)
@@ -157,27 +176,78 @@ const Scene = () => {
         } else if (type === "pipe") {
             const loader = new GLTFLoader();
             loader.load(
-                "/uploads-files-2241660-pipes.glb",  // Adjust path for pipes model
+                "/uploads-files-2241660-pipes.glb",
                 (gltf) => {
                     const pipe = gltf.scene;
-                    pipe.position.set(position.x, 1, position.z);
-                    pipe.scale.set(0.002, 0.002, 0.002);  // Adjust scale if needed
+                    pipe.position.set(position.x, yPosition, position.z);
+                    pipe.scale.set(0.002, 0.002, 0.002);
                     sceneRef.current.add(pipe);
                     objectsRef.current.push(pipe);
+                    setPipePositions((prev) => [
+                        ...prev,
+                        { id, position: { x: position.x, y: yPosition, z: position.z } },
+                    ]);
                 },
                 undefined,
                 (error) => console.error("Error loading pipe model:", error)
             );
             return;
         }
-
+        
         if (object) {
-            object.position.set(position.x, 1, position.z);
+            object.position.set(position.x, yPosition, position.z);
             sceneRef.current.add(object);
             objectsRef.current.push(object);
         }
     };
 
+    const updateObjectPosition = (object, newPosition) => {
+        if (object.name.includes("valve")) {
+            setValvePositions((prev) =>
+                prev.map((item) =>
+                    item.id === object.userData.id ? { ...item, position: newPosition } : item
+                )
+            );
+        } else if (object.name.includes("pump")) {
+            setPumpPositions((prev) =>
+                prev.map((item) =>
+                    item.id === object.userData.id ? { ...item, position: newPosition } : item
+                )
+            );
+        } else if (object.name.includes("pipe")) {
+            setPipePositions((prev) =>
+                prev.map((item) =>
+                    item.id === object.userData.id ? { ...item, position: newPosition } : item
+                )
+            );
+        }
+    };
+    
+        
+
+// Update position when drag event occurs
+useEffect(() => {
+    if (!sceneRef.current) return;
+
+    const dragControls = new DragControls(objectsRef.current, cameraRef.current, rendererRef.current.domElement);
+
+    dragControls.addEventListener("dragstart", () => { orbitControlsRef.current.enabled = false; });
+    dragControls.addEventListener("dragend", () => { orbitControlsRef.current.enabled = true; });
+
+    dragControls.addEventListener("drag", (event) => {
+        if (event.object) {
+            // Constrain y position to 0 and update position
+            event.object.position.y = 0;
+            updateObjectPosition(event.object, event.object.position);
+        }
+    });
+
+    return () => {
+        dragControls.dispose();
+    };
+}, []);
+
+    
     return (
         <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
             {/* Sidebar */}
@@ -199,6 +269,19 @@ const Scene = () => {
                      style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
                      Pipe
                 </div>
+                <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
+    <h3>Object Coordinates:</h3>
+    {valvePositions.map(({ id, position }) => (
+        <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+    {pumpPositions.map(({ id, position }) => (
+        <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+    {pipePositions.map(({ id, position }) => (
+        <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+</div>
+
             </div>
 
             {/* Scene Container */}
