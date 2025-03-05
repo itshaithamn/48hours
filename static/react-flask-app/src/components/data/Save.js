@@ -9,7 +9,7 @@ const Save = () => {
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     // light and camera position provided by your friend at chat.com/ihateai
-    camera.position.set(0, 0, 200);
+    camera.position.set(0, 0, 100);
     camera.lookAt(0, 0, 0);
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 

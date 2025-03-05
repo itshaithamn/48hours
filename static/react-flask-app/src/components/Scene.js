@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { DragControls } from "three/examples/jsm/controls/DragControls";
+import download from 'downloadjs'
 
 const Scene = () => {
     const mountRef = useRef(null);
@@ -147,12 +148,43 @@ const Scene = () => {
         }
     };
 
+    async function post(request){
+        try{
+            const response = await fetch(request);
+            const result = await response.json();
+            console.log("Success: ", result);
+        } catch (error) {
+            console.error("Error: ", error);
+        }
+    }
+
+    function handleSaveFile(e) {
+        if(sceneRef.current) {
+            // Export scene grabs current scene, sceneJSON is the json
+            // script of the scene, file is a file of the JSON script.
+            const exportScene = sceneRef.current;
+            const sceneJSON = exportScene.toJSON();
+            const file = JSON.stringify(sceneJSON);
+
+            const scenejsonRequest = new Request("http://127.0.0.1:5000/scenejson_request", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: file,
+            });
+
+            post(scenejsonRequest);
+        }
+    }
+
     return (
         <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
             <div style={{ width: "150px", background: "#222", padding: "10px", color: "white" }}>
                 <p>Drag objects:</p>
                 <div draggable onDragStart={() => setDraggingItem("testTube")} style={{ width: "50px", height: "50px", background: "#0ff", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>Tube</div>
                 <div draggable onDragStart={() => setDraggingItem("valve")} style={{ width: "50px", height: "50px", background: "#f00", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>Valve</div>
+                <button onClick={handleSaveFile}>Save File</button>
             </div>
             <div ref={mountRef} style={{ flex: 1, overflow: "hidden" }} onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} />
         </div>
