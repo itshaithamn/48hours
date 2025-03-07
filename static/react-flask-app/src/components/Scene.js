@@ -166,7 +166,7 @@ const Scene = () => {
             const sceneJSON = exportScene.toJSON();
             const file = JSON.stringify(sceneJSON);
 
-            const scenejsonRequest = new Request("http://127.0.0.1:5000/scenejson_request", {
+            const scenejsonRequest = new Request("http://3.219.182.232:80/scenejson_request", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
