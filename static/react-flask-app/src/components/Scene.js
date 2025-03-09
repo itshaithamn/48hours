@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { DragControls } from "three/examples/jsm/controls/DragControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 
 const Scene = () => {
     const [testTubePositions, setTestTubePositions] = useState([]);
@@ -136,44 +138,95 @@ const [pipePositions, setPipePositions] = useState([]);
                 { id, position: { x: position.x, y: yPosition, z: position.z } },
             ]);
         } else if (type === "valve") {
-            const loader = new GLTFLoader();
-            loader.load(
-                "/uploads-files-2965933-valveAssem.glb",
-                (gltf) => {
-                    const valve = gltf.scene;
-                    valve.position.set(position.x, yPosition, position.z);
-                    valve.scale.set(0.003, 0.003, 0.005);
-                    sceneRef.current.add(valve);
-                    objectsRef.current.push(valve);
-                    setValvePositions((prev) => [
-                        ...prev,
-                        { id, position: { x: position.x, y: yPosition, z: position.z } },
-                    ]);
+            // const loader = new GLTFLoader();
+            // loader.load(
+            //     "/uploads-files-2965933-valveAssem.glb",
+            //     (gltf) => {
+            //         const valve = gltf.scene;
+            //         valve.position.set(position.x, yPosition, position.z);
+            //         valve.scale.set(0.003, 0.003, 0.003);
+            //         sceneRef.current.add(valve);
+            //         objectsRef.current.push(valve);
+            //         setValvePositions((prev) => [
+            //             ...prev,
+            //             { id, position: { x: position.x, y: yPosition, z: position.z } },
+            //         ]);
+            //     },
+            //     undefined,
+            //     (error) => console.error("Error loading valve model:", error)
+            // );
+            const mtlLoader = new MTLLoader();
+            mtlLoader.load(
+                "Valve.mtl", // Path to your MTL file
+                (materials) => {
+                    materials.preload(); // Preload materials
+                    const objLoader = new OBJLoader();
+                    objLoader.setMaterials(materials); // Set materials from MTL file
+                    objLoader.load(
+                        "Valve.obj", // Path to your OBJ file
+                        (obj) => {
+                            
+                            obj.position.set(position.x, yPosition + 0.27, position.z); // Try with a fixed offset for testing
+
+                            obj.scale.set(0.2, 0.2, 0.2); // Adjust scale if needed
+                            sceneRef.current.add(obj);
+                            objectsRef.current.push(obj);
+                            setValvePositions((prev) => [
+                                ...prev,
+                                { id, position: { x: position.x, y: yPosition, z: position.z } },
+                            ]);
+                        },
+                        undefined,
+                        (error) => console.error("Error loading valve model:", error)
+                    );
                 },
                 undefined,
-                (error) => console.error("Error loading valve model:", error)
+                (error) => console.error("Error loading materials:", error)
             );
             return;
-        } else if (type === "pump") {
-            const loader = new GLTFLoader();
-            loader.load(
-                "/uploads_files_2431043_pump.glb",
-                (gltf) => {
-                    const pump = gltf.scene;
-                    pump.position.set(position.x, yPosition, position.z);
-                    pump.scale.set(0.005, 0.005, 0.005);
-                    sceneRef.current.add(pump);
-                    objectsRef.current.push(pump);
-                    setPumpPositions((prev) => [
-                        ...prev,
-                        { id, position: { x: position.x, y: yPosition, z: position.z } },
-                    ]);
+        } else  if (type === "pump") {
+            // Load the OBJ file (geometry only)
+            const objLoader = new OBJLoader();
+            objLoader.load(
+                "uploads-files-2431043-pump.obj", // Path to your OBJ file
+                (obj) => {
+                    // Now load the texture manually and apply it to the model
+                    const textureLoader = new THREE.TextureLoader();
+                    textureLoader.load(
+                        "pump_Mixed_AO.png", // Path to your PNG texture file
+                        (texture) => {
+                            // Apply texture to each material in the object
+                            obj.traverse((child) => {
+                                if (child.isMesh) {
+                                    child.material.map = texture; // Apply texture
+                                    child.material.needsUpdate = true; // Ensure material updates with the texture
+                                }
+                            });
+    
+                            // Position and scale the object
+                            obj.position.set(position.x, yPosition , position.z);
+                            obj.scale.set(0.005,0.005,0.005); // Adjust scale as needed
+                            sceneRef.current.add(obj);
+                            objectsRef.current.push(obj);
+    
+                            console.log('Pump model loaded and textured:', obj);
+    
+                            // Update state to track pump positions
+                            setPumpPositions((prev) => [
+                                ...prev,
+                                { id, position: { x: position.x, y: yPosition, z: position.z } },
+                            ]);
+                        },
+                        undefined,
+                        (error) => console.error("Error loading texture:", error)
+                    );
                 },
                 undefined,
                 (error) => console.error("Error loading pump model:", error)
             );
             return;
-        } else if (type === "pipe") {
+       
+        }else if (type === "y-pipe") {
             const loader = new GLTFLoader();
             loader.load(
                 "/uploads-files-2241660-pipes.glb",
@@ -181,18 +234,45 @@ const [pipePositions, setPipePositions] = useState([]);
                     const pipe = gltf.scene;
                     pipe.position.set(position.x, yPosition, position.z);
                     pipe.scale.set(0.002, 0.002, 0.002);
+                    
+                    // Rotate the pipe 90 degrees on the x-axis
+                    pipe.rotation.y = Math.PI / 2;
+        
                     sceneRef.current.add(pipe);
                     objectsRef.current.push(pipe);
                     setPipePositions((prev) => [
                         ...prev,
                         { id, position: { x: position.x, y: yPosition, z: position.z } },
                     ]);
-                },
-                undefined,
-                (error) => console.error("Error loading pipe model:", error)
+                }
             );
+        
+        
             return;
         }
+        else if (type === "x-pipe") {
+            const loader = new GLTFLoader();
+            loader.load(
+                "/uploads-files-2241660-pipes.glb",
+                (gltf) => {
+                    const pipe = gltf.scene;
+                    pipe.position.set(position.x, yPosition, position.z);
+                    pipe.scale.set(0.002, 0.002, 0.002);
+                    
+                    // Rotate the pipe 90 degrees on the x-axis
+                  
+        
+                    sceneRef.current.add(pipe);
+                    objectsRef.current.push(pipe);
+                    
+                }
+            );
+        
+        
+            return;
+        }
+        
+        
         
         if (object) {
             object.position.set(position.x, yPosition, position.z);
@@ -224,12 +304,12 @@ const [pipePositions, setPipePositions] = useState([]);
     };
     
         
+    
 
-// Update position when drag event occurs
 useEffect(() => {
     if (!sceneRef.current) return;
 
-    const dragControls = new DragControls(objectsRef.current, cameraRef.current, rendererRef.current.domElement);
+   const dragControls = new DragControls(objectsRef.current, cameraRef.current, rendererRef.current.domElement);
 
     dragControls.addEventListener("dragstart", () => { orbitControlsRef.current.enabled = false; });
     dragControls.addEventListener("dragend", () => { orbitControlsRef.current.enabled = true; });
@@ -265,9 +345,13 @@ useEffect(() => {
                      style={{ width: "50px", height: "50px", background: "#00f", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
                      Pump
                 </div>
-                <div draggable onDragStart={() => setDraggingItem("pipe")} 
+                <div draggable onDragStart={() => setDraggingItem("x-pipe")} 
                      style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
-                     Pipe
+                     x-Pipe
+                </div>
+                <div draggable onDragStart={() => setDraggingItem("y-pipe")} 
+                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     y-Pipe
                 </div>
                 <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
     <h3>Object Coordinates:</h3>
