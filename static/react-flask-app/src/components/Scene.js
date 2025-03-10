@@ -22,6 +22,38 @@ const [pipePositions, setPipePositions] = useState([]);
     
     const [draggingItem, setDraggingItem] = useState(null);
 
+        async function post(request){
+        try{
+            const response = await fetch(request);
+            const result = await response.json();
+            console.log("Success: ", result);
+        } catch (error) {
+            console.error("Error: ", error);
+        }
+    }
+
+    function handleSaveFile(e) {
+        if(sceneRef.current) {
+            // Export scene grabs current scene, sceneJSON is the json
+            // script of the scene, file is a file of the JSON script.
+            const exportScene = sceneRef.current;
+            const sceneJSON = exportScene.toJSON();
+            const file = JSON.stringify(sceneJSON);
+
+            const scenejsonRequest = new Request("http://3.219.182.232/scenejson_request", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: file,
+            });
+
+            post(scenejsonRequest);
+        }
+    }
+
+
+
     useEffect(() => {
         if (!mountRef.current) return;
 
@@ -354,6 +386,7 @@ useEffect(() => {
                      y-Pipe
                 </div>
                 <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
+                    <button onClick={handleSaveFile}>Save File</button>
     <h3>Object Coordinates:</h3>
     {valvePositions.map(({ id, position }) => (
         <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
