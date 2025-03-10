@@ -9,6 +9,7 @@
     "@mui/material": "^6.4.1",
     "@react-three/fiber": "^8.17.14",
     "cra-template": "1.2.0",
+    "downloadjs": "^1.4.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.3",
