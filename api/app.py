@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sql_server.upload
+import sql_server.mdbAuth
 
 app = Flask(__name__, static_folder="../static/react-flask-app/build", static_url_path="/")
 CORS(app)
@@ -28,6 +29,20 @@ def scenejson_request():
      except Exception as e:
           print("Error:", str(e))
           return jsonify({"error": "Invalid request"}), 400
+
+@app.route('/login', methods=['POST'])
+def login():
+     data = request.json
+     username = data.get("username")
+     password = data.get("password")
+
+     db = sql_server.mdbAuth.MariaDBAuth()
+
+     #Try the username password combo,
+     if db.authenticate_user(username, password):
+          return jsonify({"message": "Login successfully"}), 200
+     else:
+          return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route('/')
 def hello_world():
