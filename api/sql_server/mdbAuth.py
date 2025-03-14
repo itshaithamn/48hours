@@ -43,6 +43,20 @@ class MariaDBAuth:
         except mysql.connector.Error as e:
             print(f"Error: {e}")
 
+    def verify_unique_username(self, username):
+        """Verifies if the username already exists."""
+        query = "SELECT username FROM users WHERE username = %s"
+        try:
+            self.cursor.execute(query, username)
+            self.conn.commit()
+            result = self.cursor.fetchall()
+            if username in result:
+                return True
+            else :
+                return False
+        except mysql.connector.Error as e:
+            return False
+
     def authenticate_user(self, username, password):
         """check if username/password are correct. Return True/False """
         query = "SELECT password_hash FROM users WHERE username = %s"
@@ -62,13 +76,6 @@ class MariaDBAuth:
 if __name__ == "__main__":
     db = MariaDBAuth()
 
-    # use to create a new user
-    db.add_user("admin", "securepassword123")
-
-    # returns True/False
-    if db.authenticate_user("admin", "securepassword123"):
-        print("Login successful!")
-    else:
-        print("Invalid username or password.")
+    db.verify_unique_username("admin")
 
     db.close()

@@ -44,6 +44,24 @@ def login():
      else:
           return jsonify({"error": "Invalid credentials"}), 401
 
+@app.route('/register', methods=['POST'])
+def register():
+     data = request.json
+     username = data.get("username")
+     password = data.get("password")
+     password_confirm = data.get("password_confirm")
+
+     db = sql_server.mdbAuth.MariaDBAuth()
+
+     if password == password_confirm:
+          if db.verify_unique_username(username):
+               db.add_user(username, password)
+               return jsonify({"message": "User successfully created"}), 200
+
+          else:
+               return jsonify({"message": "Error, Username exists"}), 400
+     else:
+          return jsonify({"message": "Password confirmation failed, Password and username don't match"}), 400
 @app.route('/')
 def hello_world():
      return send_from_directory("../static/react-flask-app/build", "index.html")
