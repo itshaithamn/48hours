@@ -5,6 +5,7 @@ import Login from './Login';
 import Signup from "./Signup";
 import Scene from './Scene';
 import Save from './data/Save'
+import TestScene from './TestScene';
 
 function App()  {
 
@@ -21,6 +22,7 @@ function App()  {
               <Route path="/save" element={<Save />} />
               <Route path="/login" element={<Login />} />
               <Route path="/scene" element={<Scene />} />
+              <Route path="/testscene" element={<TestScene />} />
               <Route path="/home" element={<Home />} />
               <Route path="*" element={<h1>404 - Page Not Found</h1>} />
           </Routes>
