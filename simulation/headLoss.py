@@ -1,12 +1,22 @@
 import math
 import pressureSource
 
+# Variables that depend on the user's input (read -> as "depends on")
+# length, diameter, area -> Pipe shape
+# Slope, height -> Where user places pipe and its angle
+# roughness height -> material of the pipe
+# k value, pumpEnergy -> Other parts like components and pump
+# Density, viscosity -> Fluid
+# Velocity -> User input
+
+
 g = 9.8
 
-#testing:
-# need to recursively check for source pressure
+# Recursively check for source pressure (+ test values)
 source = pressureSource.PressureSource(initial_pressure=50, max_pressure=200, min_pressure=0)
-initial_pressure = pressureSource.PressureSource.get_pressure()
+initialPressure = source.get_pressure()
+
+#Test values
 velocity = 1
 fluid = "coolant concentration 50%"
 roughnessHeight = 2
@@ -21,13 +31,23 @@ class MyObject:
                 self.material = material
                 self.length = length
 
+class OutputVariables:
+    def __init__(self, pressure, velocityOutput):
+        self.pressure = pressure
+        self.velocityOutput = velocityOutput
+
+
 # Function to take the user input and store it in variables
-def user_control(self, velocity, pipeShape, fluid, component):
+def user_control(self, velocity, pipeShape, fluid, component, pipeSlope, initialHeight, pumpEnergy):
         self.velocity = velocity
+        self.pipeShape = pipeShape
         self.fluid = fluid
         self.component = component
-        self.pipeShape = pipeShape
+        self.pipeSlope = pipeSlope
+        self.initialHeight = initialHeight
+        self.pumpEnergy = pumpEnergy
 
+        
 if fluid == "water":
         fluidDensity = 998.2
         fluidViscosity = 0.0010016
@@ -40,11 +60,12 @@ if pipeShape == "straight":
         pipeLength = 20
         pipeDiameter = 10
         initialArea = math.pi * (pipeDiameter / 2)
+        finalArea = initialArea 
+#Note regarding area- my best friend google says that as the cross sectional area A dec, velocity inc & vice versa & velocity does not change if area does not change
 
 # need to figure out how to do this? I create the class already buy how do we constantly check this? Should we move to c++?
 # if we look in test.py we see that the graph is used to recursively update the code and even has a pause timer. This is a principle
 # that would also be beneficial for our code and I'm wondering how we can also implement it.
-for i in numberOfNodes: #For each node (of which each an increment value keeps track of each one placed), calculate the head loss and final pressure
 
         #Renoylds Number
         # ASSUMING THAT THE TEMP STAYS AT 20 DEGREES CELSIUIS
@@ -70,13 +91,15 @@ for i in numberOfNodes: #For each node (of which each an increment value keeps t
 
         #Final pressure
         finalVelocity = (initialArea * velocity) / finalArea
-        initialPressure = get_pressure()
+        finalHeight = pipeLength * pipeSlope
         y = fluidDensity * ((a * 0.5 * math.pow(velocity, 2)) - (a * 0.5 * math.pow(finalVelocity, 2)) + (g * (finalHeight - initialHeight)) + pumpEnergy)
-        finalPressure = initalPressure + y
+        finalPressure = initialPressure + y
 
         #Updating variables for the next node
+        initalHeight = finalHeight
         set_pressure(initalPressure, finalPressure)
         initialVelocity = finalVelocity
+        output = OutputVariables(finalPressure, finalVelocity) 
 
         print("Major head losss: " + majorHeadLoss)
         print("Minor head loss: " + minorHeadLoss)
