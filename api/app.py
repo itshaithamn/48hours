@@ -40,8 +40,10 @@ def login():
 
      #Try the username password combo,
      if db.authenticate_user(username, password):
+          db.close()
           return jsonify({"message": "Login successfully"}), 200
      else:
+          db.close()
           return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route('/register', methods=['POST'])
@@ -52,15 +54,19 @@ def register():
      password_confirm = data.get("password_confirm")
 
      db = sql_server.mdbAuth.MariaDBAuth()
-
+     username = username.lower()
+     print(username)
      if password == password_confirm:
           if db.verify_unique_username(username):
                db.add_user(username, password)
+               db.close()
                return jsonify({"message": "User successfully created"}), 200
 
           else:
+               db.close()
                return jsonify({"message": "Error, Username exists"}), 400
      else:
+          db.close()
           return jsonify({"message": "Password confirmation failed, Password and username don't match"}), 400
 @app.route('/')
 def hello_world():

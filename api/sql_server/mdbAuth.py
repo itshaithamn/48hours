@@ -54,7 +54,7 @@ class MariaDBAuth:
             result = ("x")
         else:
             result = result
-
+        print(f"User '{username}', Result '{result}'")
         try:
             if username in result:
                 return False
