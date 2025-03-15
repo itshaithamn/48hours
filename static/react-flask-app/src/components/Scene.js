@@ -8,9 +8,9 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 
 const Scene = () => {
     const [testTubePositions, setTestTubePositions] = useState([]);
-const [valvePositions, setValvePositions] = useState([]);
-const [pumpPositions, setPumpPositions] = useState([]);
-const [pipePositions, setPipePositions] = useState([]);
+    const [valvePositions, setValvePositions] = useState([]);
+    const [pumpPositions, setPumpPositions] = useState([]);
+    const [pipePositions, setPipePositions] = useState([]);
 
     const mountRef = useRef(null);
     const controlsRef = useRef(null);
@@ -40,7 +40,7 @@ const [pipePositions, setPipePositions] = useState([]);
             const sceneJSON = exportScene.toJSON();
             const file = JSON.stringify(sceneJSON);
 
-            const scenejsonRequest = new Request("http://3.219.182.232/scenejson_request", {
+            const scenejsonRequest = new Request("http://127.0.0.1:5000/scenejson_request", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -338,73 +338,73 @@ const [pipePositions, setPipePositions] = useState([]);
         
     
 
-useEffect(() => {
-    if (!sceneRef.current) return;
+    useEffect(() => {
+        if (!sceneRef.current) return;
 
-   const dragControls = new DragControls(objectsRef.current, cameraRef.current, rendererRef.current.domElement);
+        const dragControls = new DragControls(objectsRef.current, cameraRef.current, rendererRef.current.domElement);
 
-    dragControls.addEventListener("dragstart", () => { orbitControlsRef.current.enabled = false; });
-    dragControls.addEventListener("dragend", () => { orbitControlsRef.current.enabled = true; });
+        dragControls.addEventListener("dragstart", () => { orbitControlsRef.current.enabled = false; });
+        dragControls.addEventListener("dragend", () => { orbitControlsRef.current.enabled = true; });
 
-    dragControls.addEventListener("drag", (event) => {
-        if (event.object) {
-            // Constrain y position to 0 and update position
-            event.object.position.y = 0;
-            updateObjectPosition(event.object, event.object.position);
-        }
-    });
+        dragControls.addEventListener("drag", (event) => {
+            if (event.object) {
+                // Constrain y position to 0 and update position
+                event.object.position.y = 0;
+                updateObjectPosition(event.object, event.object.position);
+            }
+        });
 
-    return () => {
-        dragControls.dispose();
-    };
-}, []);
+        return () => {
+            dragControls.dispose();
+        };
+    }, []);
 
     
     return (
-        <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
-            {/* Sidebar */}
-            <div style={{ width: "150px", background: "#222", padding: "10px", color: "white" }}>
-                <p>Drag objects:</p>
-                <div draggable onDragStart={() => setDraggingItem("testTube")} 
-                     style={{ width: "50px", height: "50px", background: "#0ff", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
-                     Tube
+        <>
+            <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+                {/* Sidebar */}
+                <div style={{ width: "150px", background: "#222", padding: "10px", color: "white" }}>
+                    <p>Drag objects:</p>
+                    <div draggable onDragStart={() => setDraggingItem("testTube")}
+                         style={{ width: "50px", height: "50px", background: "#0ff", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                        Tube
+                    </div>
+                    <div draggable onDragStart={() => setDraggingItem("valve")}
+                        style={{ width: "50px", height: "50px", background: "#f00", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                        Valve
+                    </div>
+                    <div draggable onDragStart={() => setDraggingItem("pump")}
+                        style={{ width: "50px", height: "50px", background: "#00f", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                        Pump
+                    </div>
+                    <div draggable onDragStart={() => setDraggingItem("x-pipe")}
+                        style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                        x-Pipe
+                    </div>
+                    <div draggable onDragStart={() => setDraggingItem("y-pipe")}
+                        style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                        y-Pipe
+                    </div>
+                    <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
+                        <button onClick={handleSaveFile}>Save File</button>
+                        <h3>Object Coordinates:</h3>
+                        {valvePositions.map(({ id, position }) => (
+                            <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                        ))}
+                        {pumpPositions.map(({ id, position }) => (
+                            <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                        ))}
+                        {pipePositions.map(({ id, position }) => (
+                            <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                        ))}
+                    </div>
                 </div>
-                <div draggable onDragStart={() => setDraggingItem("valve")} 
-                     style={{ width: "50px", height: "50px", background: "#f00", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
-                     Valve
-                </div>
-                <div draggable onDragStart={() => setDraggingItem("pump")} 
-                     style={{ width: "50px", height: "50px", background: "#00f", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
-                     Pump
-                </div>
-                <div draggable onDragStart={() => setDraggingItem("x-pipe")} 
-                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
-                     x-Pipe
-                </div>
-                <div draggable onDragStart={() => setDraggingItem("y-pipe")} 
-                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
-                     y-Pipe
-                </div>
-                <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
-                    <button onClick={handleSaveFile}>Save File</button>
-    <h3>Object Coordinates:</h3>
-    {valvePositions.map(({ id, position }) => (
-        <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pumpPositions.map(({ id, position }) => (
-        <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pipePositions.map(({ id, position }) => (
-        <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-</div>
-
+                {/* Scene Container */}
+                <div ref={mountRef} style={{ flex: 1, overflow: "hidden" }}
+                    onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} />
             </div>
-
-            {/* Scene Container */}
-            <div ref={mountRef} style={{ flex: 1, overflow: "hidden" }} 
-                 onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} />
-        </div>
+        </>
     );
 };
 
