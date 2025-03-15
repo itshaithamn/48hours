@@ -49,13 +49,11 @@ class MariaDBAuth:
         query = "SELECT username FROM users WHERE username = %s"
 
         self.cursor.execute(query, (username,))
-        print("executed 2")
         result = self.cursor.fetchone()
         if result == None:
             result = ("x")
         else:
             result = result
-        print(f"executed 4 {result}")
 
         try:
             if username in result:
