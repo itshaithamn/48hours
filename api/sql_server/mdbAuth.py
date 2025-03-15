@@ -39,6 +39,7 @@ class MariaDBAuth:
         try:
             self.cursor.execute(query, (username, hashed_password))
             self.conn.commit()
+            self.cursor.fetchall()
             print(f"User '{username}' added successfully.")
         except mysql.connector.Error as e:
             print(f"Error: {e}")
@@ -46,15 +47,24 @@ class MariaDBAuth:
     def verify_unique_username(self, username):
         """Verifies if the username already exists."""
         query = "SELECT username FROM users WHERE username = %s"
+
+        self.cursor.execute(query, (username,))
+        print("executed 2")
+        result = self.cursor.fetchone()
+        if result == None:
+            result = ("x")
+        else:
+            result = result
+        print(f"executed 4 {result}")
+
         try:
-            self.cursor.execute(query, username)
-            self.conn.commit()
-            result = self.cursor.fetchall()
             if username in result:
-                return True
-            else :
                 return False
+            else:
+                print(username in result)
+                return True
         except mysql.connector.Error as e:
+            print(f"Error: {e}")
             return False
 
     def authenticate_user(self, username, password):
