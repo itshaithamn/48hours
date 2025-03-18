@@ -9,9 +9,9 @@ import download from "downloadjs"; // Make sure to import the library
 
 const Scene = () => {
     const [testTubePositions, setTestTubePositions] = useState([]);
-const [valvePositions, setValvePositions] = useState([]);
-const [pumpPositions, setPumpPositions] = useState([]);
-const [pipePositions, setPipePositions] = useState([]);
+    const [valvePositions, setValvePositions] = useState([]);
+    const [pumpPositions, setPumpPositions] = useState([]);
+    const [pipePositions, setPipePositions] = useState([]);
 
     const mountRef = useRef(null);
     const controlsRef = useRef(null);
@@ -36,7 +36,7 @@ const [pipePositions, setPipePositions] = useState([]);
             };
 
             // Download the JSON
-            download(JSON.stringify(sceneData, null, 2), "scene.json", "application/json");
+            // download(JSON.stringify(sceneData, null, 2), "scene.json", "application/json");
 
             // Send to server (fixed fetch logic
             const response = await fetch("http://127.0.0.1:5000/scenejson_request", {
@@ -362,7 +362,6 @@ useEffect(() => {
     
     return (
         <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
-            {/* Sidebar */}
             <div style={{ width: "150px", background: "#222", padding: "10px", color: "white" }}>
                 <p>Drag objects:</p>
                 <div draggable onDragStart={() => setDraggingItem("testTube")} 
