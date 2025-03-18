@@ -19,7 +19,8 @@ const [pipePositions, setPipePositions] = useState([]);
     const cameraRef = useRef(null);
     const rendererRef = useRef(null);
     const orbitControlsRef = useRef(null);
-    
+    const pumpToHandleMap = useRef(new Map());
+    const valveToHandleMap=useRef(new Map());
     const [draggingItem, setDraggingItem] = useState(null);
 
         async function post(request){
@@ -61,6 +62,8 @@ const [pipePositions, setPipePositions] = useState([]);
         if (sceneRef.current) {
             sceneRef.current.clear();
             objectsRef.current = [];
+            pumpToHandleMap.current.clear();
+            valveToHandleMap.current.clear();
         }
 
         // Setup Scene
@@ -101,38 +104,103 @@ const [pipePositions, setPipePositions] = useState([]);
         scene.add(pointLight);
 
         // Drag Controls
-        if (controlsRef.current) controlsRef.current.dispose();
-        const dragControls = new DragControls(objectsRef.current, camera, renderer.domElement);
-        controlsRef.current = dragControls;
+       // Setup Drag Controls
+       const dragControls = new DragControls(objectsRef.current, camera, renderer.domElement);
+       controlsRef.current = dragControls;
 
-        dragControls.addEventListener("dragstart", () => { orbitControls.enabled = false; });
-        dragControls.addEventListener("dragend", () => { orbitControls.enabled = true; });
+       // Handle drag control events
+       dragControls.addEventListener("drag", (event) => {
+           const object = event.object;
+           
+           // Define the grid boundaries
+           const minX = -5, maxX = 5;
+           const minZ = -5, maxZ = 5;
+           object.position.y=0
+           // Constrain the object's position within the grid
+           object.position.x = Math.max(minX, Math.min(maxX, object.position.x));
+           object.position.z = Math.max(minZ, Math.min(maxZ, object.position.z));
+           
+           // If this is a pump handle, move the associated pump
+           if (object.userData?.isPumpHandle|| object.userData?.isValveHandle) {
+               const pumpModel = object.userData.pumpModel;
+               const valveModel=object.userData.valveModel;
+               if (pumpModel) {
+                   pumpModel.position.x = object.position.x;
+                   pumpModel.position.z = object.position.z;
+                   
+                   // Update state for pump positions
+                   setPumpPositions(prev => 
+                       prev.map(item => 
+                           item.id === pumpModel.userData.id ? 
+                           { ...item, position: { 
+                               x: object.position.x, 
+                               y: pumpModel.position.y, 
+                               z: object.position.z 
+                           }} : item
+                       )
+                   );
+                   if (valveModel) {
+                    valveModel.position.x = object.position.x;
+                    valveModel.position.z = object.position.z;
+                    
+                    // Update state for pump positions
+                    setValvePositions(prev => 
+                        prev.map(item => 
+                            item.id === valveModel.userData.id ? 
+                            { ...item, position: { 
+                                x: object.position.x, 
+                                y: valveModel.position.y, 
+                                z: object.position.z 
+                            }} : item
+                        )
+                    );}
+               }
+           } else if (object.name.includes("testTube")) {
+               // Update test tube position state
+               setTestTubePositions(prev => 
+                   prev.map(item => 
+                       item.id === object.userData.id ? 
+                       { ...item, position: { ...object.position }} : item
+                   )
+               );
+           }
+           // Add handlers for other object types as needed
+       });
 
-        // Handle Window Resize
-        const handleResize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-        };
-        window.addEventListener("resize", handleResize);
+       // Disable orbiting when dragging
+       dragControls.addEventListener("dragstart", () => {
+           orbitControls.enabled = false;
+       });
 
-        // Animation Loop
-        const animate = () => {
-            requestAnimationFrame(animate);
-            orbitControls.update();
-            renderer.render(scene, camera);
-        };
-        animate();
+       dragControls.addEventListener("dragend", () => {
+           orbitControls.enabled = true;
+       });
 
-        return () => {
-            controlsRef.current?.dispose();
-            orbitControlsRef.current?.dispose();
-            renderer.dispose();
-            window.removeEventListener("resize", handleResize);
-            if (mountRef.current) mountRef.current.innerHTML = "";
-        };
-    }, []);
+       // Handle Window Resize
+       const handleResize = () => {
+           camera.aspect = window.innerWidth / window.innerHeight;
+           camera.updateProjectionMatrix();
+           renderer.setSize(window.innerWidth, window.innerHeight);
+           renderer.setPixelRatio(window.devicePixelRatio);
+       };
+       window.addEventListener("resize", handleResize);
+
+       // Animation Loop
+       const animate = () => {
+           requestAnimationFrame(animate);
+           orbitControls.update();
+           renderer.render(scene, camera);
+       };
+       animate();
+
+       return () => {
+           controlsRef.current?.dispose();
+           orbitControlsRef.current?.dispose();
+           renderer.dispose();
+           window.removeEventListener("resize", handleResize);
+           if (mountRef.current) mountRef.current.innerHTML = "";
+       };
+   }, []);
 
     // Handle Drag & Drop
     const handleDrop = (event) => {
@@ -152,6 +220,37 @@ const [pipePositions, setPipePositions] = useState([]);
         }
         setDraggingItem(null);
     };
+    const createDragHandle = (parentObject, position, size = 0.5) => {
+        // Create an invisible box as a drag handle
+        const geometry = new THREE.BoxGeometry(size, size, size);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.0  // Invisible by default, can be made visible for debugging
+        });
+        
+        const handle = new THREE.Mesh(geometry, material);
+        handle.position.set(position.x, position.y + size/2, position.z);
+        handle.userData = {
+            isPumpHandle: true,
+            isValveHandle:true,
+            valveModel:parentObject,
+            pumpModel: parentObject
+        };
+        
+        // Add handle to scene and objects array
+        sceneRef.current.add(handle);
+        objectsRef.current.push(handle);
+        
+        // Update drag controls with the new handle
+        if (controlsRef.current) {
+            const currentObjects = controlsRef.current.getObjects();
+            currentObjects.push(handle);
+        }
+        
+        return handle;
+    };
+
 
     // Function to Add Objects to Scene
     const addObjectToScene = (type, position) => {
@@ -161,93 +260,197 @@ const [pipePositions, setPipePositions] = useState([]);
         const id = Date.now(); // Generate a unique ID for each object
     
         if (type === "testTube") {
-            object = new THREE.Mesh(
+            const testTube = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.3, 0.3, 2, 32),
                 new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.7, shininess: 100 })
             );
-            setTestTubePositions((prev) => [
-                ...prev,
-                { id, position: { x: position.x, y: yPosition, z: position.z } },
-            ]);
+            testTube.position.set(position.x, 0.5, position.z);
+            testTube.name = `testTube-${id}`;
+            testTube.userData = { id, type: "testTube" };
+            
+            sceneRef.current.add(testTube);
+            objectsRef.current.push(testTube);
+            setTestTubePositions((prev) => [...prev, { id, position: { ...testTube.position } }]);
+            
+            // Update drag controls if needed
+            if (controlsRef.current) {
+                const currentObjects = controlsRef.current.getObjects();
+                currentObjects.push(testTube);
+            }
+        
         } else if (type === "valve") {
-            // const loader = new GLTFLoader();
-            // loader.load(
-            //     "/uploads-files-2965933-valveAssem.glb",
-            //     (gltf) => {
-            //         const valve = gltf.scene;
-            //         valve.position.set(position.x, yPosition, position.z);
-            //         valve.scale.set(0.003, 0.003, 0.003);
-            //         sceneRef.current.add(valve);
-            //         objectsRef.current.push(valve);
-            //         setValvePositions((prev) => [
-            //             ...prev,
-            //             { id, position: { x: position.x, y: yPosition, z: position.z } },
-            //         ]);
-            //     },
-            //     undefined,
-            //     (error) => console.error("Error loading valve model:", error)
-            // );
-            const mtlLoader = new MTLLoader();
+            const mtlLoader= new MTLLoader()
             mtlLoader.load(
-                "Valve.mtl", // Path to your MTL file
+                "Valve.mtl",
                 (materials) => {
-                    materials.preload(); // Preload materials
-                    const objLoader = new OBJLoader();
-                    objLoader.setMaterials(materials); // Set materials from MTL file
-                    objLoader.load(
-                        "Valve.obj", // Path to your OBJ file
-                        (obj) => {
-                            
-                            obj.position.set(position.x, yPosition + 0.27, position.z); // Try with a fixed offset for testing
-
-                            obj.scale.set(0.2, 0.2, 0.2); // Adjust scale if needed
-                            sceneRef.current.add(obj);
-                            objectsRef.current.push(obj);
-                            setValvePositions((prev) => [
-                                ...prev,
-                                { id, position: { x: position.x, y: yPosition, z: position.z } },
-                            ]);
-                        },
-                        undefined,
-                        (error) => console.error("Error loading valve model:", error)
-                    );
+                  materials.preload();
+                  const objLoader = new OBJLoader();
+                  objLoader.setMaterials(materials);
+                  objLoader.load(
+                    "Valve.obj",
+                    (obj) => {
+                      // Find all meshes in the loaded object
+                      const allValveParts = [];
+                      obj.traverse((child) => {
+                        if (child.isMesh) {
+                          allValveParts.push(child);
+                          // Make valve parts ignore raycaster completely
+                          child.raycast = () => {};
+                        }
+                      });
+                      
+                      // Position and scale the main object
+                      obj.position.set(position.x, 0.27, position.z);
+                      obj.scale.set(0.2, 0.2, 0.2);
+                      obj.name = `valve-${id}`;
+                      // Make the valve itself ignore raycaster
+                      obj.raycast = () => {};
+                      obj.userData = { id, type: "valve", isValve: true };
+                      
+                      // Add to scene
+                      sceneRef.current.add(obj);
+                      objectsRef.current.push(obj);
+                      
+                      // Create a bounding box for the valve
+                      const boundingBox = new THREE.Box3().setFromObject(obj);
+                      const boxSize = new THREE.Vector3();
+                      boundingBox.getSize(boxSize);
+                      
+                      // Create a visible box for dragging (slightly larger than the actual valve)
+                      const boxGeometry = new THREE.BoxGeometry(
+                        boxSize.x * 1.2, 
+                        boxSize.y * 1.2, 
+                        boxSize.z * 1.2
+                      );
+                      const boxMaterial = new THREE.MeshBasicMaterial({ 
+                        color: 0x00ff00, 
+                        transparent: true, 
+                        opacity: 0.3
+                      });
+                      const dragBox = new THREE.Mesh(boxGeometry, boxMaterial);
+                      
+                      // Position the box at the center of the valve
+                      const boxCenter = new THREE.Vector3();
+                      boundingBox.getCenter(boxCenter);
+                      dragBox.position.copy(boxCenter);
+                      dragBox.name = `valve-dragbox-${id}`;
+                      dragBox.userData = { 
+                        id, 
+                        type: "valveDragBox", 
+                        isValveDragBox: true,
+                        targetValve: obj
+                      };
+                      
+                      sceneRef.current.add(dragBox);
+                      
+                      // Create the drag handle for the box only
+                      const handle = createDragHandle(dragBox, dragBox.position);
+                      
+                      // Store the valve reference in the handle for easy access
+                      handle.userData = { 
+                        ...handle.userData,
+                        isValveHandle: true,
+                        valveRef: obj
+                      };
+                      
+                      // Keep track of the original offset between valve and box
+                      const valveOffset = new THREE.Vector3();
+                      valveOffset.subVectors(obj.position, dragBox.position);
+                      
+                      // Add an update function to your drag controls
+                      const originalDragMethod = handle.onDrag || function() {};
+                      
+                      handle.onDrag = function(newPosition) {
+                        // Call the original drag method if it exists
+                        if (typeof originalDragMethod === 'function') {
+                          originalDragMethod.call(this, newPosition);
+                        }
+                        
+                        // Update the valve position based on drag box position
+                        if (obj && dragBox) {
+                          // Update valve position
+                          obj.position.copy(dragBox.position).add(valveOffset);
+                          
+                          // Update your state if needed
+                          setValvePositions((prev) => {
+                            const updatedPositions = [...prev];
+                            const valveIndex = updatedPositions.findIndex(v => v.id === id);
+                            if (valveIndex !== -1) {
+                              updatedPositions[valveIndex] = {
+                                id,
+                                position: {
+                                  x: obj.position.x,
+                                  y: obj.position.y,
+                                  z: obj.position.z
+                                }
+                              };
+                            }
+                            return updatedPositions;
+                          });
+                        }
+                      };
+                      
+                      valveToHandleMap.current.set(obj.uuid, handle);
+                      
+                      // Initial position update
+                      setValvePositions((prev) => [...prev, {
+                        id,
+                        position: {
+                          x: obj.position.x,
+                          y: obj.position.y,
+                          z: obj.position.z
+                        }
+                      }]);
+                    },
+                    undefined,
+                    (error) => console.error("Error loading valve model:", error)
+                  );
                 },
                 undefined,
                 (error) => console.error("Error loading materials:", error)
-            );
-            return;
-        } else  if (type === "pump") {
-            // Load the OBJ file (geometry only)
+              );
+        } else if (type === "pump") {
             const objLoader = new OBJLoader();
             objLoader.load(
-                "uploads-files-2431043-pump.obj", // Path to your OBJ file
+                "uploads-files-2431043-pump.obj",
                 (obj) => {
-                    // Now load the texture manually and apply it to the model
                     const textureLoader = new THREE.TextureLoader();
                     textureLoader.load(
-                        "pump_Mixed_AO.png", // Path to your PNG texture file
+                        "pump_Mixed_AO.png",
                         (texture) => {
-                            // Apply texture to each material in the object
                             obj.traverse((child) => {
                                 if (child.isMesh) {
-                                    child.material.map = texture; // Apply texture
-                                    child.material.needsUpdate = true; // Ensure material updates with the texture
+                                    child.material.map = texture;
+                                    child.material.needsUpdate = true;
                                 }
                             });
     
-                            // Position and scale the object
-                            obj.position.set(position.x, yPosition , position.z);
-                            obj.scale.set(0.005,0.005,0.005); // Adjust scale as needed
+                            // Set initial position and scale
+                            obj.position.set(position.x, 0, position.z);
+                            obj.scale.set(0.005, 0.005, 0.005);
+                            obj.name = `pump-${id}`;
+                            obj.userData = { id, type: "pump" };
+                            
+                            // Add to scene but NOT to draggable objects
                             sceneRef.current.add(obj);
-                            objectsRef.current.push(obj);
+                            
+                            // Create a drag handle for the pump
+                            const handle = createDragHandle(obj, obj.position);
+                            
+                            // Store the reference in our map
+                            pumpToHandleMap.current.set(obj.uuid, handle);
+                            
+                            // Add to state with position
+                            setPumpPositions((prev) => [...prev, { 
+                                id, 
+                                position: { 
+                                    x: obj.position.x, 
+                                    y: obj.position.y, 
+                                    z: obj.position.z 
+                                } 
+                            }]);
     
-                            console.log('Pump model loaded and textured:', obj);
-    
-                            // Update state to track pump positions
-                            setPumpPositions((prev) => [
-                                ...prev,
-                                { id, position: { x: position.x, y: yPosition, z: position.z } },
-                            ]);
+                            console.log("Pump loaded with drag handle.");
                         },
                         undefined,
                         (error) => console.error("Error loading texture:", error)
@@ -256,7 +459,8 @@ const [pipePositions, setPipePositions] = useState([]);
                 undefined,
                 (error) => console.error("Error loading pump model:", error)
             );
-            return;
+    
+    
        
         }else if (type === "y-pipe") {
             const loader = new GLTFLoader();
@@ -338,26 +542,26 @@ const [pipePositions, setPipePositions] = useState([]);
         
     
 
-useEffect(() => {
-    if (!sceneRef.current) return;
+// useEffect(() => {
+//     if (!sceneRef.current) return;
 
-   const dragControls = new DragControls(objectsRef.current, cameraRef.current, rendererRef.current.domElement);
+//    const dragControls = new DragControls(objectsRef.current, cameraRef.current, rendererRef.current.domElement);
 
-    dragControls.addEventListener("dragstart", () => { orbitControlsRef.current.enabled = false; });
-    dragControls.addEventListener("dragend", () => { orbitControlsRef.current.enabled = true; });
+//     dragControls.addEventListener("dragstart", () => { orbitControlsRef.current.enabled = false; });
+//     dragControls.addEventListener("dragend", () => { orbitControlsRef.current.enabled = true; });
 
-    dragControls.addEventListener("drag", (event) => {
-        if (event.object) {
-            // Constrain y position to 0 and update position
-            event.object.position.y = 0;
-            updateObjectPosition(event.object, event.object.position);
-        }
-    });
+//     dragControls.addEventListener("drag", (event) => {
+//         if (event.object) {
+//             // Constrain y position to 0 and update position
+//             event.object.position.y = 0;
+//             updateObjectPosition(event.object, event.object.position);
+//         }
+//     });
 
-    return () => {
-        dragControls.dispose();
-    };
-}, []);
+//     return () => {
+//         dragControls.dispose();
+//     };
+// }, []);
 
     
     return (

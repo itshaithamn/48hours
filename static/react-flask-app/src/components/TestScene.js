@@ -8,9 +8,9 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 
 const TestScene = () => {
     const [testTubePositions, setTestTubePositions] = useState([]);
-const [valvePositions, setValvePositions] = useState([]);
-const [pumpPositions, setPumpPositions] = useState([]);
-const [pipePositions, setPipePositions] = useState([]);
+    const [valvePositions, setValvePositions] = useState([]);
+    const [pumpPositions, setPumpPositions] = useState([]);
+    const [pipePositions, setPipePositions] = useState([]);
 
     const mountRef = useRef(null);
     const controlsRef = useRef(null);
@@ -19,10 +19,11 @@ const [pipePositions, setPipePositions] = useState([]);
     const cameraRef = useRef(null);
     const rendererRef = useRef(null);
     const orbitControlsRef = useRef(null);
+    const pumpToHandleMap = useRef(new Map());
     
     const [draggingItem, setDraggingItem] = useState(null);
 
-        async function post(request){
+    async function post(request){
         try{
             const response = await fetch(request);
             const result = await response.json();
@@ -52,8 +53,6 @@ const [pipePositions, setPipePositions] = useState([]);
         }
     }
 
-
-
     useEffect(() => {
         if (!mountRef.current) return;
 
@@ -61,6 +60,7 @@ const [pipePositions, setPipePositions] = useState([]);
         if (sceneRef.current) {
             sceneRef.current.clear();
             objectsRef.current = [];
+            pumpToHandleMap.current.clear();
         }
 
         // Setup Scene
@@ -100,27 +100,52 @@ const [pipePositions, setPipePositions] = useState([]);
         pointLight.position.set(5, 5, 5);
         scene.add(pointLight);
 
-        // Drag Controls
-        if (controlsRef.current) controlsRef.current.dispose();
+        // Setup Drag Controls
         const dragControls = new DragControls(objectsRef.current, camera, renderer.domElement);
         controlsRef.current = dragControls;
 
-        // Restrict movement within boundaries
+        // Handle drag control events
         dragControls.addEventListener("drag", (event) => {
             const object = event.object;
             
             // Define the grid boundaries
             const minX = -5, maxX = 5;
             const minZ = -5, maxZ = 5;
-        
+            
             // Constrain the object's position within the grid
             object.position.x = Math.max(minX, Math.min(maxX, object.position.x));
             object.position.z = Math.max(minZ, Math.min(maxZ, object.position.z));
-        
-            // Keep the y position fixed if needed
-            object.position.y = 0.5; 
+            
+            // If this is a pump handle, move the associated pump
+            if (object.userData?.isPumpHandle) {
+                const pumpModel = object.userData.pumpModel;
+                if (pumpModel) {
+                    pumpModel.position.x = object.position.x;
+                    pumpModel.position.z = object.position.z;
+                    
+                    // Update state for pump positions
+                    setPumpPositions(prev => 
+                        prev.map(item => 
+                            item.id === pumpModel.userData.id ? 
+                            { ...item, position: { 
+                                x: object.position.x, 
+                                y: pumpModel.position.y, 
+                                z: object.position.z 
+                            }} : item
+                        )
+                    );
+                }
+            } else if (object.name.includes("testTube")) {
+                // Update test tube position state
+                setTestTubePositions(prev => 
+                    prev.map(item => 
+                        item.id === object.userData.id ? 
+                        { ...item, position: { ...object.position }} : item
+                    )
+                );
+            }
+            // Add handlers for other object types as needed
         });
-        
 
         // Disable orbiting when dragging
         dragControls.addEventListener("dragstart", () => {
@@ -176,25 +201,61 @@ const [pipePositions, setPipePositions] = useState([]);
         setDraggingItem(null);
     };
 
+    // Function to create a drag handle for complex objects
+    const createDragHandle = (parentObject, position, size = 0.5) => {
+        // Create an invisible box as a drag handle
+        const geometry = new THREE.BoxGeometry(size, size, size);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.0  // Invisible by default, can be made visible for debugging
+        });
+        
+        const handle = new THREE.Mesh(geometry, material);
+        handle.position.set(position.x, position.y + size/2, position.z);
+        handle.userData = {
+            isPumpHandle: true,
+            pumpModel: parentObject
+        };
+        
+        // Add handle to scene and objects array
+        sceneRef.current.add(handle);
+        objectsRef.current.push(handle);
+        
+        // Update drag controls with the new handle
+        if (controlsRef.current) {
+            const currentObjects = controlsRef.current.getObjects();
+            currentObjects.push(handle);
+        }
+        
+        return handle;
+    };
+
     // Function to Add Objects to Scene
     const addObjectToScene = (type, position) => {
         if (!sceneRef.current) return;
-        let object;
-        const yPosition = 0;
+        
         const id = Date.now(); // Unique ID
         
         if (type === "testTube") {
-            object = new THREE.Mesh(
+            const testTube = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.3, 0.3, 2, 32),
                 new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.7, shininess: 100 })
             );
-            object.position.set(position.x, yPosition, position.z);
-            object.name = `testTube-${id}`;
-            sceneRef.current.add(object);
-            objectsRef.current.push(object);
-            setTestTubePositions((prev) => [...prev, { id, position: object.position }]);
+            testTube.position.set(position.x, 0.5, position.z);
+            testTube.name = `testTube-${id}`;
+            testTube.userData = { id, type: "testTube" };
+            
+            sceneRef.current.add(testTube);
+            objectsRef.current.push(testTube);
+            setTestTubePositions((prev) => [...prev, { id, position: { ...testTube.position } }]);
+            
+            // Update drag controls if needed
+            if (controlsRef.current) {
+                const currentObjects = controlsRef.current.getObjects();
+                currentObjects.push(testTube);
+            }
         } 
-    
         else if (type === "pump") {
             const objLoader = new OBJLoader();
             objLoader.load(
@@ -211,20 +272,32 @@ const [pipePositions, setPipePositions] = useState([]);
                                 }
                             });
     
-                            obj.position.set(position.x, yPosition, position.z);
+                            // Set initial position and scale
+                            obj.position.set(position.x, 0, position.z);
                             obj.scale.set(0.005, 0.005, 0.005);
                             obj.name = `pump-${id}`;
+                            obj.userData = { id, type: "pump" };
+                            
+                            // Add to scene but NOT to draggable objects
                             sceneRef.current.add(obj);
-                            objectsRef.current.push(obj);
+                            
+                            // Create a drag handle for the pump
+                            const handle = createDragHandle(obj, obj.position);
+                            
+                            // Store the reference in our map
+                            pumpToHandleMap.current.set(obj.uuid, handle);
+                            
+                            // Add to state with position
+                            setPumpPositions((prev) => [...prev, { 
+                                id, 
+                                position: { 
+                                    x: obj.position.x, 
+                                    y: obj.position.y, 
+                                    z: obj.position.z 
+                                } 
+                            }]);
     
-                            setPumpPositions((prev) => [...prev, { id, position: obj.position }]);
-    
-                         
-
-
-
-    
-                            console.log("Pump loaded and added to drag controls.");
+                            console.log("Pump loaded with drag handle.");
                         },
                         undefined,
                         (error) => console.error("Error loading texture:", error)
@@ -233,48 +306,8 @@ const [pipePositions, setPipePositions] = useState([]);
                 undefined,
                 (error) => console.error("Error loading pump model:", error)
             );
-        
-    
-       return;
-       
-            }
-        
-        
-        if (object) {
-            object.position.set(position.x, yPosition, position.z);
-            sceneRef.current.add(object);
-            objectsRef.current.push(object);
         }
     };
-
-    const updateObjectPosition = (object, newPosition) => {
-        if (object.name.includes("valve")) {
-            setValvePositions((prev) =>
-                prev.map((item) =>
-                    item.id === object.userData.id ? { ...item, position: newPosition } : item
-                )
-            );
-        } else if (object.name.includes("pump")) {
-            setPumpPositions((prev) =>
-                prev.map((item) =>
-                    item.id === object.userData.id ? { ...item, position: newPosition } : item
-                )
-            );
-        } else if (object.name.includes("pipe")) {
-            setPipePositions((prev) =>
-                prev.map((item) =>
-                    item.id === object.userData.id ? { ...item, position: newPosition } : item
-                )
-            );
-        }
-    };
-    
-        
-    
-
- 
-    
-
     
     return (
         <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
@@ -282,7 +315,7 @@ const [pipePositions, setPipePositions] = useState([]);
             <div style={{ width: "150px", background: "#222", padding: "10px", color: "white" }}>
                 <p>Drag objects:</p>
                 <div draggable onDragStart={() => setDraggingItem("testTube")} 
-                     style={{ width: "50px", height: "50px", background: "#0ff", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     style={{ width: "50px", height: "50px", background: "#0ff", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px", marginBottom: "10px" }}>
                      Tube
                 </div>
                
@@ -291,25 +324,34 @@ const [pipePositions, setPipePositions] = useState([]);
                      Pump
                 </div>
                 
-                <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
-                    <button onClick={handleSaveFile}>Save File</button>
-    <h3>Object Coordinates:</h3>
-    {valvePositions.map(({ id, position }) => (
-        <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pumpPositions.map(({ id, position }) => (
-        <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pipePositions.map(({ id, position }) => (
-        <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-</div>
-
+                <button 
+                    onClick={handleSaveFile}
+                    style={{ marginTop: "20px", padding: "5px 10px", cursor: "pointer" }}
+                >
+                    Save File
+                </button>
             </div>
 
             {/* Scene Container */}
             <div ref={mountRef} style={{ flex: 1, overflow: "hidden" }} 
                  onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} />
+                 
+            {/* Coordinates Panel */}
+            <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.7)", color: "white", padding: "10px", borderRadius: "5px", maxWidth: "250px" }}>
+                <h3>Object Coordinates:</h3>
+                {testTubePositions.map(({ id, position }) => (
+                    <p key={id}>Test Tube: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                ))}
+                {valvePositions.map(({ id, position }) => (
+                    <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                ))}
+                {pumpPositions.map(({ id, position }) => (
+                    <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                ))}
+                {pipePositions.map(({ id, position }) => (
+                    <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                ))}
+            </div>
         </div>
     );
 };
