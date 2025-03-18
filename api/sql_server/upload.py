@@ -35,11 +35,9 @@ def send_file(host, port_no, data, author_id):
 
 
     # Send file content in data
-    for i in range(0, len(data), chunk_size):
-        chunk = data[i:i+chunk_size]
-        client_socket.sendall(chunk.encode())
-        print(f"Chunk sent {i}")# Send the chunk
-    client_socket.sendall(b"<END>")
+    print(data)
+
+    client_socket.sendall(data.encode())
     print(f"[!] data sent:{data}, length: {len(data)}")
 
     print(f"[+] File '{filename}' uploaded successfully")

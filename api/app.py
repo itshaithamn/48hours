@@ -19,12 +19,13 @@ def receive_data():
 def scenejson_request():
      try:
           data = request.json
+          data = str(data)
           #change file_path so that it accepts json files instead. I don't
           #want to create an intermediary file, so esentially push it as an object
           #im wondering if there can be an internal function in the server that always runs
           #and makes it so that the json object is only converted in the server and nowhere else
           #bash file script to manage this process on the server? Add author_id to front-end
-          sql_server.send_file("107.21.218.63", 57832, "./user-data/3dfile2.json", 1)
+          sql_server.send_file("107.21.218.63", 57832, data, 1)
           return jsonify({"message": "Data received successfully", "data": data}), 200
      except Exception as e:
           print("Error:", str(e))
