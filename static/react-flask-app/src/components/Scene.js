@@ -19,26 +19,16 @@ const [pipePositions, setPipePositions] = useState([]);
     const cameraRef = useRef(null);
     const rendererRef = useRef(null);
     const orbitControlsRef = useRef(null);
-    
     const [draggingItem, setDraggingItem] = useState(null);
+    const [error, setError] = useState("");
 
-        async function post(request){
-        try{
-            const response = await fetch(request);
-            const result = await response.json();
-            console.log("Success: ", result);
-        } catch (error) {
-            console.error("Error: ", error);
-        }
-    }
 
-    function handleSaveFile(e) {
-        if(sceneRef.current) {
-            // Export scene grabs current scene, sceneJSON is the json
-            // script of the scene, file is a file of the JSON script.
-            const exportScene = sceneRef.current;
-            const sceneJSON = exportScene.toJSON();
-            const file = JSON.stringify(sceneJSON);
+    const handleSaveFile = async (e) => {
+        e.preventDefault()
+
+        try {
+            const scenetoExport = sceneRef.current
+            const file = JSON.stringify(scenetoExport);
 
             const scenejsonRequest = new Request("http://3.219.182.232/scenejson_request", {
                 method: "POST",
@@ -48,7 +38,14 @@ const [pipePositions, setPipePositions] = useState([]);
                 body: file,
             });
 
-            post(scenejsonRequest);
+            const data = scenejsonRequest.json();
+
+            if(scenejsonRequest.ok) {
+                alert("BRUHHH");
+            }
+        } catch (error) {
+            setError("Unexpected Error");
+            console.error("Unexpected Error", error);
         }
     }
 
