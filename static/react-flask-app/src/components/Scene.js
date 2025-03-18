@@ -38,8 +38,8 @@ const [pipePositions, setPipePositions] = useState([]);
             // Download the JSON
             download(JSON.stringify(sceneData, null, 2), "scene.json", "application/json");
 
-            // Send to server (fixed fetch logic)
-            const response = await fetch("http://3.219.182.232/scenejson_request", {
+            // Send to server (fixed fetch logic
+            const response = await fetch("http://127.0.0.1:5000/scenejson_request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(sceneData),

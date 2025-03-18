@@ -12,35 +12,35 @@ linux/mac: path/to/local/file
 '''
 local_file_path = ""
 author = 5
+chunk_size = 4096
 
 
-def send_file(host, port_no, file_path, author_id):
+def send_file(host, port_no, data, author_id):
     """Send the file to the database"""
-    if not os.path.isfile(file_path):
-        print(f"[!] File not found: {file_path}")
-        return
+    print(f"Now sending data: {data}")
 
     #gets the size and file name
-    filename = os.path.basename(file_path)
-    file_size = os.path.getsize(file_path)
-    print(f"[*] Uploading {filename}, size {file_size} to {host}:{port_no}")
+
+    print(f"[*] Uploading {author_id} to {host}:{port_no}")
 
     #sets up client socket and connects
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((host, port_no))
 
-    filename = filename
+    filename = "user"+str(author_id)
     #sends file name, length, and size
     client_socket.sendall(struct.pack('!I', len(filename)))
     client_socket.sendall(filename.encode())
     client_socket.sendall(struct.pack('!Q', author_id))
-    client_socket.sendall(struct.pack('!Q', file_size))
 
-    # Send file content in chunks
-    with open(file_path, "rb") as f:
-        while chunk := f.read(4096):
-            client_socket.sendall(chunk)
-            print(f"[!] chunk sent: {len(chunk)}")
+
+    # Send file content in data
+    for i in range(0, len(data), chunk_size):
+        chunk = data[i:i+chunk_size]
+        client_socket.sendall(chunk.encode())
+        print(f"Chunk sent {i}")# Send the chunk
+    client_socket.sendall(b"<END>")
+    print(f"[!] data sent:{data}, length: {len(data)}")
 
     print(f"[+] File '{filename}' uploaded successfully")
 
