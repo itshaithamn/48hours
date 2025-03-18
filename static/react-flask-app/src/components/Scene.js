@@ -5,6 +5,7 @@ import { DragControls } from "three/examples/jsm/controls/DragControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import download from "downloadjs"; // Make sure to import the library
 
 const Scene = () => {
     const [testTubePositions, setTestTubePositions] = useState([]);
@@ -24,30 +25,32 @@ const [pipePositions, setPipePositions] = useState([]);
 
 
     const handleSaveFile = async (e) => {
-        e.preventDefault()
-
+        e.preventDefault();
         try {
-            const scenetoExport = sceneRef.current
-            const file = JSON.stringify(scenetoExport);
+            // Create a serializable object from state
+            const sceneData = {
+                testTubes: testTubePositions,
+                valves: valvePositions,
+                pumps: pumpPositions,
+                pipes: pipePositions,
+            };
 
-            const scenejsonRequest = new Request("http://3.219.182.232/scenejson_request", {
+            // Download the JSON
+            download(JSON.stringify(sceneData, null, 2), "scene.json", "application/json");
+
+            // Send to server (fixed fetch logic)
+            const response = await fetch("http://3.219.182.232/scenejson_request", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: file,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(sceneData),
             });
 
-            const data = scenejsonRequest.json();
-
-            if(scenejsonRequest.ok) {
-                alert("BRUHHH");
-            }
+            if (response.ok) alert("BRUHHH");
         } catch (error) {
             setError("Unexpected Error");
             console.error("Unexpected Error", error);
         }
-    }
+    };
 
 
 
@@ -384,20 +387,19 @@ useEffect(() => {
                 </div>
                 <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
                     <button onClick={handleSaveFile}>Save File</button>
-    <h3>Object Coordinates:</h3>
-    {valvePositions.map(({ id, position }) => (
-        <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pumpPositions.map(({ id, position }) => (
-        <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pipePositions.map(({ id, position }) => (
-        <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-</div>
+                    <h3>Object Coordinates:</h3>
+                    {valvePositions.map(({ id, position }) => (
+                        <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                    ))}
+                    {pumpPositions.map(({ id, position }) => (
+                        <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                    ))}
+                    {pipePositions.map(({ id, position }) => (
+                        <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+                    ))}
+                </div>
 
             </div>
-
             {/* Scene Container */}
             <div ref={mountRef} style={{ flex: 1, overflow: "hidden" }} 
                  onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} />
