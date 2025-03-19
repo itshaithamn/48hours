@@ -1,5 +1,5 @@
-from simulationPackage.pressureSourceP import PressureSource
-from simulationPackage.headLossP import testing
+from simulationPackage.pressureSource import PressureSource
+from simulationPackage.headLoss import testing
 
 testing()
 PressureSource.test()
