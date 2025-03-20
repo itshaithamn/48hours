@@ -5,11 +5,11 @@ data = json_string
 
 class Node:
       def __init__(self, id, x, y, z):
-            roundVal = lambda val: round(val)
+            roundval = lambda val: round(val)
 
-            self.x = roundVal(x)
-            self.y = roundVal(y)
-            self.z = roundVal(z)
+            self.x = roundval(x)
+            self.y = roundval(y)
+            self.z = roundval(z)
             self.id = id
 
       @property
@@ -24,4 +24,5 @@ class Node:
 pump = data['pumps'][0]
 pumpNode = Node(id = pump['id'], x = pump['position']['x'],y = pump['position']['y'],z = pump['position']['z'])
 print(pumpNode.getNode)
-tupelval = pump.getNode
+tupelval = pumpNode.getNode
+print(tupelval)
