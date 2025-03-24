@@ -3,7 +3,7 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
-
+Command to push all code to all branches: git push --all origin
 In the project directory, you can run:
 
 ### `npm start`
