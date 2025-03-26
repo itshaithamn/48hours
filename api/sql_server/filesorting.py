@@ -17,11 +17,12 @@ class filesorting:
         query = "SELECT fileno FROM userfiles WHERE id = %s"
         self.cursor.execute(query, (author,))
         result = self.cursor.fetchall()
-        try:
+        if len(result) != 0:
             largest_id = max(list(sum(result, ())))
             return largest_id + 1
-        finally:
+        else:
             return 1
+
     def upload_file(self, author, filename):
         """Upload a file to database"""
         highest_file_id = self.get_current_highest_file_id(author)
