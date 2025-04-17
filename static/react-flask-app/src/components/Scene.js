@@ -5,12 +5,23 @@ import { DragControls } from "three/examples/jsm/controls/DragControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils';
+
 
 const Scene = () => {
     const [testTubePositions, setTestTubePositions] = useState([]);
 const [valvePositions, setValvePositions] = useState([]);
 const [pumpPositions, setPumpPositions] = useState([]);
 const [pipePositions, setPipePositions] = useState([]);
+const [smallxpipePositions, setSmallXPipePositions] = useState([]);
+const [smallypipePositions, setSmallYPipePositions] = useState([]);
+const [medypipePositions, setMedYPipePositions] = useState([]);
+const [lrgypipePositions, setLrgYPipePositions] = useState([]);
+const [medxpipePositions, setMedXPipePositions] = useState([]);
+const [lrgxpipePositions, setLrgXPipePositions] = useState([]);
+
+
+
 
     const mountRef = useRef(null);
     const controlsRef = useRef(null);
@@ -21,6 +32,18 @@ const [pipePositions, setPipePositions] = useState([]);
     const orbitControlsRef = useRef(null);
     const pumpToHandleMap = useRef(new Map());
     const valveToHandleMap=useRef(new Map());
+    const smallxpipeToHandleMap=useRef(new Map());
+    const smallypipeToHandleMap=useRef(new Map());
+    const medxpipeToHandleMap=useRef(new Map());
+    const medypipeToHandleMap=useRef(new Map());
+    const lrgxpipeToHandleMap=useRef(new Map());
+    const lrgypipeToHandleMap=useRef(new Map());
+
+
+
+
+
+
     const [draggingItem, setDraggingItem] = useState(null);
 
         async function post(request){
@@ -64,6 +87,14 @@ const [pipePositions, setPipePositions] = useState([]);
             objectsRef.current = [];
             pumpToHandleMap.current.clear();
             valveToHandleMap.current.clear();
+            smallxpipeToHandleMap.current.clear();
+            smallypipeToHandleMap.current.clear();
+            medxpipeToHandleMap.current.clear();
+            medypipeToHandleMap.current.clear();
+            lrgxpipeToHandleMap.current.clear();
+            lrgypipeToHandleMap.current.clear();
+
+
         }
 
         // Setup Scene
@@ -119,15 +150,25 @@ const [pipePositions, setPipePositions] = useState([]);
            // Constrain the object's position within the grid
            object.position.x = Math.max(minX, Math.min(maxX, object.position.x));
            object.position.z = Math.max(minZ, Math.min(maxZ, object.position.z));
-           
            // If this is a pump handle, move the associated pump
-           if (object.userData?.isPumpHandle|| object.userData?.isValveHandle) {
+           if (object.userData?.isPumpHandle|| object.userData?.isValveHandle ||object.userData?.isSmallXpipeHandle||object.userData?.isSmallYpipeHandle||object.userData?.isMedXpipeHandle||object.userData?.isMedYpipeHandle||object.userData?.isLrgXpipeHandle||object.userData?.isLrgYpipeHandle) {
                const pumpModel = object.userData.pumpModel;
+               const smallxpipeModel=object.userData.smallxpipeModel;
+               const smallypipeModel=object.userData.smallypipeModel;
+               const medxpipeModel=object.userData.medxpipeModel;
+               const medypipeModel=object.userData.medypipeModel;
+               const lrgxpipeModel=object.userData.lrgxpipeModel;
+               const lrgypipeModel=object.userData.lrgypipeModel;
+               const handle = event.object;
+
                const valveModel=object.userData.valveModel;
                if (pumpModel) {
                    pumpModel.position.x = object.position.x;
                    pumpModel.position.z = object.position.z;
-                   
+                   handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                   handle.position.z = Math.max(-5, Math.min(5, handle.position.z));
                    // Update state for pump positions
                    setPumpPositions(prev => 
                        prev.map(item => 
@@ -142,7 +183,10 @@ const [pipePositions, setPipePositions] = useState([]);
                    if (valveModel) {
                     valveModel.position.x = object.position.x;
                     valveModel.position.z = object.position.z;
-                    
+                    handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                   handle.position.z = Math.max(-5, Math.min(5, handle.position.z));
                     // Update state for pump positions
                     setValvePositions(prev => 
                         prev.map(item => 
@@ -154,7 +198,121 @@ const [pipePositions, setPipePositions] = useState([]);
                             }} : item
                         )
                     );}
+                    if (smallxpipeModel) {
+                        smallxpipeModel.position.x = object.position.x;
+                        smallxpipeModel.position.z = object.position.z;
+                        smallxpipeModel.position.y=0.25;
+                        handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                   handle.position.z = Math.max(-5, Math.min(5, handle.position.z));
+                        // Update state for pump positions
+                        setSmallXPipePositions(prev => 
+                            prev.map(item => 
+                                item.id === smallxpipeModel.userData.id ? 
+                                { ...item, position: { 
+                                    x: object.position.x, 
+                                    y: smallxpipeModel.position.y, 
+                                    z: object.position.z 
+                                }} : item
+                            )
+                        );}
+                        if (medxpipeModel) {
+                            handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                   handle.position.z = Math.max(-5, Math.min(5, handle.position.z));
+                            medxpipeModel.position.x = object.position.x;
+                            medxpipeModel.position.z = object.position.z;
+                            medxpipeModel.position.y=0.25;
+                            // Update state for pump positions
+                            setMedXPipePositions(prev => 
+                                prev.map(item => 
+                                    item.id === medxpipeModel.userData.id ? 
+                                    { ...item, position: { 
+                                        x: object.position.x, 
+                                        y: medxpipeModel.position.y, 
+                                        z: object.position.z 
+                                    }} : item
+                                )
+                            );}
+                            if (lrgxpipeModel) {
+                                lrgxpipeModel.position.x = object.position.x;
+                                lrgxpipeModel.position.z = object.position.z;
+                                handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                                lrgxpipeModel.position.y=0.25;
+                                // Update state for pump positions
+                                setLrgXPipePositions(prev => 
+                                    prev.map(item => 
+                                        item.id === lrgxpipeModel.userData.id ? 
+                                        { ...item, position: { 
+                                            x: object.position.x, 
+                                            y: lrgxpipeModel.position.y, 
+                                            z: object.position.z 
+                                        }} : item
+                                    )
+                                );}
+                        if (smallypipeModel) {
+                            smallypipeModel.position.x = object.position.x;
+                            smallypipeModel.position.z = object.position.z;
+                            handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                            // Update state for pump positions
+                            setSmallYPipePositions(prev => 
+                                prev.map(item => 
+                                    item.id === smallypipeModel.userData.id ? 
+                                    { ...item, position: { 
+                                        x: object.position.x, 
+                                        y: valveModel.position.y, 
+                                        z: object.position.z 
+                                    }} : item
+                                )
+                            );}
+                            if (medypipeModel) {
+                                medypipeModel.position.x = object.position.x;
+                                medypipeModel.position.z = object.position.z;
+                                handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                                medypipeModel.position.y=0.25;
+                                // Update state for pump positions
+                                setMedYPipePositions(prev => 
+                                    prev.map(item => 
+                                        item.id === medypipeModel.userData.id ? 
+                                        { ...item, position: { 
+                                            x: object.position.x, 
+                                            y: medypipeModel.position.y, 
+                                            z: object.position.z 
+                                        }} : item
+                                    )
+                                );}
+                                if (lrgypipeModel) {
+                                    lrgypipeModel.position.x = object.position.x;
+                                    lrgypipeModel.position.z = object.position.z;
+                                    handle.position.x = Math.floor(handle.position.x) + 0.5;
+                   handle.position.z = Math.floor(handle.position.z) + 0.5;
+                   handle.position.x = Math.max(-5, Math.min(5, handle.position.x));
+                                    lrgypipeModel.position.y=0.25;
+                                    // Update state for pump positions
+                                    setLrgXPipePositions(prev => 
+                                        prev.map(item => 
+                                            item.id === lrgypipeModel.userData.id ? 
+                                            { ...item, position: { 
+                                                x: object.position.x, 
+                                                y: lrgypipeModel.position.y, 
+                                                z: object.position.z 
+                                            }} : item
+                                        )
+                                    );}
+    
+                   
+
                }
+               
+               
            } else if (object.name.includes("testTube")) {
                // Update test tube position state
                setTestTubePositions(prev => 
@@ -234,7 +392,23 @@ const [pipePositions, setPipePositions] = useState([]);
         handle.userData = {
             isPumpHandle: true,
             isValveHandle:true,
+            isSmallXpipeHandle:true,
+            isSmallYpipeHandle:true,
+            isMedXpipeHandle: true,
+            isMedYpipeHandle:true,
+            isLrgXpipeHandle:true,
+            isLrgYpipeHandle: true,
             valveModel:parentObject,
+            smallxpipeModel: parentObject,
+            smallypipeModel: parentObject,
+            medxpipeModel: parentObject,
+            medypipe: parentObject,
+            lrgypipeModel: parentObject,
+            lrgxpipeModel: parentObject,
+
+
+
+
             pumpModel: parentObject
         };
         
@@ -279,151 +453,76 @@ const [pipePositions, setPipePositions] = useState([]);
             }
         
         } else if (type === "valve") {
-            const mtlLoader= new MTLLoader()
-            mtlLoader.load(
-                "Valve.mtl",
-                (materials) => {
-                  materials.preload();
-                  const objLoader = new OBJLoader();
-                  objLoader.setMaterials(materials);
-                  objLoader.load(
-                    "Valve.obj",
-                    (obj) => {
-                      // Find all meshes in the loaded object
-                      const allValveParts = [];
-                      obj.traverse((child) => {
-                        if (child.isMesh) {
-                          allValveParts.push(child);
-                          // Make valve parts ignore raycaster completely
-                          child.raycast = () => {};
-                        }
-                      });
-                      
-                      // Position and scale the main object
-                      obj.position.set(position.x, 0.27, position.z);
-                      obj.scale.set(0.2, 0.2, 0.2);
-                      obj.name = `valve-${id}`;
-                      // Make the valve itself ignore raycaster
-                      obj.raycast = () => {};
-                      obj.userData = { id, type: "valve", isValve: true };
-                      
-                      // Add to scene
-                      sceneRef.current.add(obj);
-                      objectsRef.current.push(obj);
-                      
-                      // Create a bounding box for the valve
-                      const boundingBox = new THREE.Box3().setFromObject(obj);
-                      const boxSize = new THREE.Vector3();
-                      boundingBox.getSize(boxSize);
-                      
-                      // Create a visible box for dragging (slightly larger than the actual valve)
-                      const boxGeometry = new THREE.BoxGeometry(
-                        boxSize.x * 1.2, 
-                        boxSize.y * 1.2, 
-                        boxSize.z * 1.2
-                      );
-                      const boxMaterial = new THREE.MeshBasicMaterial({ 
-                        color: 0x00ff00, 
-                        transparent: true, 
-                        opacity: 0.3
-                      });
-                      const dragBox = new THREE.Mesh(boxGeometry, boxMaterial);
-                      
-                      // Position the box at the center of the valve
-                      const boxCenter = new THREE.Vector3();
-                      boundingBox.getCenter(boxCenter);
-                      dragBox.position.copy(boxCenter);
-                      dragBox.name = `valve-dragbox-${id}`;
-                      dragBox.userData = { 
-                        id, 
-                        type: "valveDragBox", 
-                        isValveDragBox: true,
-                        targetValve: obj
-                      };
-                      
-                      sceneRef.current.add(dragBox);
-                      
-                      // Create the drag handle for the box only
-                      const handle = createDragHandle(dragBox, dragBox.position);
-                      
-                      // Store the valve reference in the handle for easy access
-                      handle.userData = { 
-                        ...handle.userData,
-                        isValveHandle: true,
-                        valveRef: obj
-                      };
-                      
-                      // Keep track of the original offset between valve and box
-                      const valveOffset = new THREE.Vector3();
-                      valveOffset.subVectors(obj.position, dragBox.position);
-                      
-                      // Add an update function to your drag controls
-                      const originalDragMethod = handle.onDrag || function() {};
-                      
-                      handle.onDrag = function(newPosition) {
-                        // Call the original drag method if it exists
-                        if (typeof originalDragMethod === 'function') {
-                          originalDragMethod.call(this, newPosition);
-                        }
-                        
-                        // Update the valve position based on drag box position
-                        if (obj && dragBox) {
-                          // Update valve position
-                          obj.position.copy(dragBox.position).add(valveOffset);
-                          
-                          // Update your state if needed
-                          setValvePositions((prev) => {
-                            const updatedPositions = [...prev];
-                            const valveIndex = updatedPositions.findIndex(v => v.id === id);
-                            if (valveIndex !== -1) {
-                              updatedPositions[valveIndex] = {
-                                id,
-                                position: {
-                                  x: obj.position.x,
-                                  y: obj.position.y,
-                                  z: obj.position.z
-                                }
-                              };
-                            }
-                            return updatedPositions;
-                          });
-                        }
-                      };
-                      
-                      valveToHandleMap.current.set(obj.uuid, handle);
-                      
-                      // Initial position update
-                      setValvePositions((prev) => [...prev, {
-                        id,
-                        position: {
-                          x: obj.position.x,
-                          y: obj.position.y,
-                          z: obj.position.z
-                        }
-                      }]);
-                    },
-                    undefined,
-                    (error) => console.error("Error loading valve model:", error)
-                  );
-                },
-                undefined,
-                (error) => console.error("Error loading materials:", error)
-              );
-        } else if (type === "pump") {
+            const mtlLoader = new MTLLoader();
+            const textureLoader = new THREE.TextureLoader();
+            const customTexture = textureLoader.load('Bronze valve_DefaultMaterial_Roughness.png');
+        
             const objLoader = new OBJLoader();
-            objLoader.load(
-                "uploads-files-2431043-pump.obj",
-                (obj) => {
-                    const textureLoader = new THREE.TextureLoader();
-                    textureLoader.load(
-                        "pump_Mixed_AO.png",
-                        (texture) => {
+        
+            objLoader.load('newvalve.obj', (obj) => {
+                
+                obj.traverse((child) => {
+
+                    if (child instanceof THREE.Mesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                       
+                        // Apply the custom texture manually
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: customTexture,
+                            roughness: 1,
+                            metalness: 0.5
+                        });
+                    }
+                });
+        
+                obj.rotation.y = Math.PI;
+                obj.position.set(position.x, 0, position.z);
+                obj.scale.set(0.005, 0.005, 0.005);
+                obj.name = `valve-${id}`;
+                obj.userData = { id, type: "valve" };
+        
+                sceneRef.current.add(obj);
+        
+                const handle = createDragHandle(obj, obj.position);
+                valveToHandleMap.current.set(obj.uuid, handle);
+        
+                setValvePositions((prev) => [...prev, {
+                    id,
+                    position: {
+                        x: obj.position.x,
+                        y: obj.position.y,
+                        z: obj.position.z
+                    }
+                }]);
+        
+            }, undefined, (error) => {
+                console.error("Error loading valve model:", error);
+            });
+                
+        
+        } else if (type === "pump") {
+            const mtlLoader = new MTLLoader();
+            mtlLoader.load('newpump2.mtl', (materials) => {
+                materials.preload();
+            
+                const objLoader = new OBJLoader();
+                objLoader.setMaterials(materials);
+                objLoader.load(
+                    'newpump2.obj',
+                    (obj) => {
+                       obj.rotation.x = Math.PI; // 180 degrees
+
+                        // Optional: If you want to override the texture manually
+                        const textureLoader = new THREE.TextureLoader();
+                        textureLoader.load('pump_Mixed_AO.png', (texture) => {
                             obj.traverse((child) => {
                                 if (child.isMesh) {
                                     child.material.map = texture;
                                     child.material.needsUpdate = true;
                                 }
                             });
+                        });
     
                             // Set initial position and scale
                             obj.position.set(position.x, 0, position.z);
@@ -460,7 +559,6 @@ const [pipePositions, setPipePositions] = useState([]);
                 (error) => console.error("Error loading pump model:", error)
             );
     
-    
        
         }else if (type === "y-pipe") {
             const loader = new GLTFLoader();
@@ -486,12 +584,121 @@ const [pipePositions, setPipePositions] = useState([]);
         
             return;
         }
+        else if (type === "smally-pipe") {
+            const loader = new GLTFLoader();
+            loader.load(
+                "/smallpipe.glb",
+                (gltf) => {
+                    const pipe = gltf.scene;
+                    const obj = pipe;
+                    obj.position.set(position.x, position.y, position.z);
+                    obj.scale.set(0.002, 0.002, 0.002);
+                    obj.name = `smallypipe-${id}`;
+                    obj.userData = { id, type: "smallypipe" };
+                    
+                    // Add to scene but NOT to draggable objects
+                    sceneRef.current.add(obj);
+                    
+                    // Create a drag handle for the pump
+                    const handle = createDragHandle(obj, obj.position);
+                    
+                    // Store the reference in our map
+                   smallypipeToHandleMap.current.set(obj.uuid, handle);
+                    
+                    sceneRef.current.add(pipe);
+                    objectsRef.current.push(pipe);
+                    setSmallYPipePositions((prev) => [
+                        ...prev,
+                        { id, position: { x: position.x, y: position.y, z: position.z } },
+                    ]);
+                }
+            );
+        
+        
+            return;
+        }
+        else if (type === "medy-pipe") {
+            const loader = new GLTFLoader();
+            loader.load(
+                "/mediumpipe.glb",
+                (gltf) => {
+                    const pipe = gltf.scene;
+                    const obj = pipe;
+                    pipe.position.set(position.x, yPosition, position.z);
+                    pipe.scale.set(0.002, 0.002, 0.002);
+                    
+                    // Rotate the pipe 90 degrees on the x-axis
+                    pipe.rotation.y = Math.PI / 2;
+                    obj.name = `medypipe-${id}`;
+                    obj.userData = { id, type: "medypipe" };
+                    
+                    // Add to scene but NOT to draggable objects
+                    sceneRef.current.add(obj);
+                    
+                    // Create a drag handle for the pump
+                    const handle = createDragHandle(obj, obj.position);
+                    
+                    // Store the reference in our map
+                    medypipeToHandleMap.current.set(obj.uuid, handle);
+                    
+                    sceneRef.current.add(pipe);
+                    objectsRef.current.push(pipe);
+                    setMedYPipePositions((prev) => [
+                        ...prev,
+                        { id, position: { x: position.x, y: yPosition, z: position.z } },
+                    ]);
+                }
+            );
+        
+        
+            return;
+        }
+
+        else if (type === "lrgy-pipe") {
+            const loader = new GLTFLoader();
+            loader.load(
+                "/largepipe.glb",
+                (gltf) => {
+                  
+                    const pipe = gltf.scene;
+                    const obj = pipe;
+                    pipe.position.set(position.x, yPosition, position.z);
+                    pipe.scale.set(0.002, 0.002, 0.002);
+                    
+                    // Rotate the pipe 90 degrees on the x-axis
+                    pipe.rotation.y = Math.PI / 2;
+                    obj.name = `lrgypipe-${id}`;
+                    obj.userData = { id, type: "lrgypipe" };
+                    
+                    // Add to scene but NOT to draggable objects
+                    sceneRef.current.add(obj);
+                    
+                    // Create a drag handle for the pump
+                    const handle = createDragHandle(obj, obj.position);
+                    
+                    // Store the reference in our map
+                    lrgypipeToHandleMap.current.set(obj.uuid, handle);
+                    
+                    sceneRef.current.add(pipe);
+                    objectsRef.current.push(pipe);
+                    setLrgYPipePositions((prev) => [
+                        ...prev,
+                        { id, position: { x: position.x, y: yPosition, z: position.z } },
+                    ]);
+                }
+            );
+        
+        
+            return;
+        }
         else if (type === "x-pipe") {
             const loader = new GLTFLoader();
             loader.load(
                 "/uploads-files-2241660-pipes.glb",
                 (gltf) => {
+                   
                     const pipe = gltf.scene;
+                    
                     pipe.position.set(position.x, yPosition, position.z);
                     pipe.scale.set(0.002, 0.002, 0.002);
                     
@@ -502,11 +709,108 @@ const [pipePositions, setPipePositions] = useState([]);
                     objectsRef.current.push(pipe);
                     
                 }
-            );
-        
+            );}
+            else if (type === "smallx-pipe") {
+                const loader = new GLTFLoader();
+                loader.load(
+                    "/smallpipe.glb",
+                    (gltf) => {
+                        
+                        const pipe = gltf.scene;
+                        const obj = pipe;
+                        pipe.position.set(position.x, 0, position.z);
+                        pipe.scale.set(0.002, 0.002, 0.002);
+                        obj.name = `smallxpipe-${id}`;
+                        obj.userData = { id, type: "smallxpipe" };
+                        
+                        // Add to scene but NOT to draggable objects
+                        sceneRef.current.add(obj);
+                        
+                        // Create a drag handle for the pump
+                        const handle = createDragHandle(obj, obj.position);
+                        
+                        // Store the reference in our map
+                        smallxpipeToHandleMap.current.set(obj.uuid, handle);
+                        
+                        setSmallXPipePositions((prev) => [
+                            ...prev,
+                            { id, position: { x: position.x, y: yPosition, z: position.z } },
+                        ]);               
+            
+                        sceneRef.current.add(pipe);
+                        objectsRef.current.push(pipe);
+                        
+                    }
+                );
         
             return;
-        }
+        } else if (type === "medx-pipe") {
+            const loader = new GLTFLoader();
+            loader.load(
+                "/mediumpipe.glb",
+                (gltf) => {
+                    const pipe = gltf.scene;
+                    const obj = pipe;
+                    pipe.position.set(position.x, position.y, position.z);
+                    pipe.scale.set(0.002, 0.002, 0.002);
+                    obj.name = `medxpipe-${id}`;
+                    obj.userData = { id, type: "medxpipe" };
+                    
+                    // Add to scene but NOT to draggable objects
+                    sceneRef.current.add(obj);
+                    
+                    // Create a drag handle for the pump
+                    const handle = createDragHandle(obj, obj.position);
+                    
+                    // Store the reference in our map
+                    medxpipeToHandleMap.current.set(obj.uuid, handle);
+                    
+                    setMedXPipePositions((prev) => [
+                        ...prev,
+                        { id, position: { x: position.x, y: yPosition, z: position.z } },
+                    ]);               
+        
+                    sceneRef.current.add(pipe);
+                    objectsRef.current.push(pipe);
+                    
+                }
+            );
+    
+        return;
+    }else if (type === "lrgx-pipe") {
+        const loader = new GLTFLoader();
+        loader.load(
+            "/largepipe.glb",
+            (gltf) => {
+                const pipe = gltf.scene;
+                const obj = pipe;
+                pipe.position.set(position.x, yPosition, position.z);
+                pipe.scale.set(0.002, 0.002, 0.002);
+                obj.name = `lrgxpipe-${id}`;
+                obj.userData = { id, type: "lrgxpipe" };
+                
+                // Add to scene but NOT to draggable objects
+                sceneRef.current.add(obj);
+                
+                // Create a drag handle for the pump
+                const handle = createDragHandle(obj, obj.position);
+                
+                // Store the reference in our map
+                lrgxpipeToHandleMap.current.set(obj.uuid, handle);
+                
+                setLrgXPipePositions((prev) => [
+                    ...prev,
+                    { id, position: { x: position.x, y: yPosition, z: position.z } },
+                ]);               
+    
+                sceneRef.current.add(pipe);
+                objectsRef.current.push(pipe);
+                
+            }
+        );
+
+    return;
+}
         
         
         
@@ -589,6 +893,30 @@ const [pipePositions, setPipePositions] = useState([]);
                      style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
                      y-Pipe
                 </div>
+                <div draggable onDragStart={() => setDraggingItem("smallx-pipe")} 
+                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     smallx
+                </div>
+                <div draggable onDragStart={() => setDraggingItem("medx-pipe")} 
+                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     medx
+                </div>
+                <div draggable onDragStart={() => setDraggingItem("lrgx-pipe")} 
+                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     lrgx
+                </div>
+                <div draggable onDragStart={() => setDraggingItem("smally-pipe")} 
+                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     smally
+                </div>
+                <div draggable onDragStart={() => setDraggingItem("medy-pipe")} 
+                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     medy
+                </div>
+                <div draggable onDragStart={() => setDraggingItem("lrgy-pipe")} 
+                     style={{ width: "50px", height: "50px", background: "#888", cursor: "grab", textAlign: "center", lineHeight: "50px", borderRadius: "5px" }}>
+                     lrgy
+                </div>
                 <div style={{ position: "absolute", top: 10, left: 160, color: "white", fontSize: "14px" }}>
                     <button onClick={handleSaveFile}>Save File</button>
     <h3>Object Coordinates:</h3>
@@ -600,6 +928,24 @@ const [pipePositions, setPipePositions] = useState([]);
     ))}
     {pipePositions.map(({ id, position }) => (
         <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+     {smallxpipePositions.map(({ id, position }) => (
+        <p key={id}>SmallXPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+     {medxpipePositions.map(({ id, position }) => (
+        <p key={id}>MedXPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+     {lrgxpipePositions.map(({ id, position }) => (
+        <p key={id}>LrgXPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+     {smallypipePositions.map(({ id, position }) => (
+        <p key={id}>SmallYPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+     {medypipePositions.map(({ id, position }) => (
+        <p key={id}>MedYPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
+    ))}
+     {lrgypipePositions.map(({ id, position }) => (
+        <p key={id}>LrgYPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
     ))}
 </div>
 
