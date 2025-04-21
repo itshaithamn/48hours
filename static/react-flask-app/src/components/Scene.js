@@ -71,8 +71,6 @@ const [isCameraMovable, setIsCameraMovable] = useState(false);
         }
     };
 
-            
-    
 
     useEffect(() => {
       const controls = orbitControlsRef.current;

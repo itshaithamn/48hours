@@ -1,4 +1,4 @@
-import filesorting
+from . import filesorting
 import socket
 import struct
 
