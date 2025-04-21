@@ -20,7 +20,7 @@ import HomeIcon from "@mui/icons-material/Home";
         e.preventDefault();
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/register", {
+            const response = await fetch("http://3.219.182.232/register", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({username, password, password_confirm}),
