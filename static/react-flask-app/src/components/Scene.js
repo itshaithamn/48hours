@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { DragControls } from "three/examples/jsm/controls/DragControls";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {DragControls} from "three/examples/jsm/controls/DragControls";
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
+import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 // import download from "downloadjs"; // Make sure to import the library
 
 const Scene = () => {
@@ -42,6 +42,32 @@ const [isCameraMovable, setIsCameraMovable] = useState(false);
     const lrgxpipeToHandleMap=useRef(new Map());
     const lrgypipeToHandleMap=useRef(new Map());
 
+
+     const [sourcePumpValue, setSourcePumpValue] = useState(700); // Default source pump value in psi
+    const [valveOpenness, setValveOpenness] = useState(100); // Default valve openness percentage (0-100)
+    const [outputPressure, setOutputPressure] = useState(700); // Calculated output pressure
+    const [fluidVelocity, setFluidVelocity] = useState(1.0); // Fluid velocity in m/s (adjustable)
+    const [fluidDensity, setFluidDensity] = useState(1000); // Fluid density in kg/m³ (water ~ 1000 kg/m³)
+    const [pipeFrictionFactor, setPipeFrictionFactor] = useState(0.02); // Friction factor (dimensionless)
+    const [pipeLength, setPipeLength] = useState(10); // Pipe length in meters
+    const [pipeDiameter, setPipeDiameter] = useState(0.1); // Pipe diameter in meters
+
+    // Function to calculate pressure drop using Darcy-Weisbach
+    const calculatePressureDrop = () => {
+        return pipeFrictionFactor *
+            (pipeLength / pipeDiameter) *
+            ((fluidDensity * Math.pow(fluidVelocity, 2)) / 2);
+    };
+
+    // Function to calculate and update the output pressure
+    const calculateOutputPressure = () => {
+        const pressureDrop = calculatePressureDrop();
+        const adjustedFlowRate = (valveOpenness / 100); // Adjust flow rate based on valve openness
+        const calculatedPressure = sourcePumpValue - (pressureDrop * adjustedFlowRate);
+
+        // Ensure pressure doesn't go negative
+        setOutputPressure(Math.max(calculatedPressure, 0));
+    };
 
     const handleSaveFile = async (e) => {
         e.preventDefault();
@@ -1037,39 +1063,99 @@ const [isCameraMovable, setIsCameraMovable] = useState(false);
                     <button onClick={() => setIsCameraMovable(prev => !prev)}>
   {isCameraMovable ? "Lock Camera" : "Move Camera"}
 </button>
-    {/* <h3>Object Coordinates:</h3>
-    {valvePositions.map(({ id, position }) => (
-        <p key={id}>Valve: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pumpPositions.map(({ id, position }) => (
-        <p key={id}>Pump: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-    {pipePositions.map(({ id, position }) => (
-        <p key={id}>Pipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-     {smallxpipePositions.map(({ id, position }) => (
-        <p key={id}>SmallXPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-     {medxpipePositions.map(({ id, position }) => (
-        <p key={id}>MedXPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-     {lrgxpipePositions.map(({ id, position }) => (
-        <p key={id}>LrgXPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-     {smallypipePositions.map(({ id, position }) => (
-        <p key={id}>SmallYPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-     {medypipePositions.map(({ id, position }) => (
-        <p key={id}>MedYPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))}
-     {lrgypipePositions.map(({ id, position }) => (
-        <p key={id}>LrgYPipe: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</p>
-    ))} */}
-</div>
+  </div>
+      </div>
+       <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+            {/* Sidebar */}
+            <div style={{ width: "150px", background: "#222", backgroundColor: "black", opacity: 0.8, padding: "10px", color: "white" }}>
+                <h4>Pressure Control</h4>
+                <label style={{ display: "block", marginBottom: "5px" }}>
+                    Source Pump Value (psi):
+                    <input
+                        type="number"
+                        value={sourcePumpValue}
+                        onChange={(e) => setSourcePumpValue(Number(e.target.value))}
+                        style={{ marginLeft: "5px", width: "60px" }}
+                    />
+                </label>
 
+                <label style={{ display: "block", marginBottom: "5px" }}>
+                    Valve Openness (%):
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={valveOpenness}
+                        onChange={(e) => setValveOpenness(Number(e.target.value))}
+                        style={{ marginLeft: "5px", width: "100px" }}
+                    />
+                    {valveOpenness}%
+                </label>
+
+                <button onClick={calculateOutputPressure} style={{ marginTop: "10px" }}>
+                    Calculate Output Pressure
+                </button>
+
+                <p style={{ marginTop: "10px" }}>
+                    Output Pressure: <strong>{outputPressure.toFixed(2)} psi</strong>
+                </p>
+
+                {/* Additional Inputs for Darcy-Weisbach Parameters */}
+                <div style={{ marginTop: "20px" }}>
+                    <h4>Pipe Properties</h4>
+                    <label style={{ display: "block", marginBottom: "5px" }}>
+                        Pipe Length (m):
+                        <input
+                            type="number"
+                            value={pipeLength}
+                            onChange={(e) => setPipeLength(Number(e.target.value))}
+                            style={{ marginLeft: "5px", width: "60px" }}
+                        />
+                    </label>
+                    <label style={{ display: "block", marginBottom: "5px" }}>
+                        Pipe Diameter (m):
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={pipeDiameter}
+                            onChange={(e) => setPipeDiameter(Number(e.target.value))}
+                            style={{ marginLeft: "5px", width: "60px" }}
+                        />
+                    </label>
+                    <label style={{ display: "block", marginBottom: "5px" }}>
+                        Fluid Velocity (m/s):
+                        <input
+                            type="number"
+                            step="0.1"
+                            value={fluidVelocity}
+                            onChange={(e) => setFluidVelocity(Number(e.target.value))}
+                            style={{ marginLeft: "5px", width: "60px" }}
+                        />
+                    </label>
+                    <label style={{ display: "block", marginBottom: "5px" }}>
+                        Fluid Density (kg/m³):
+                        <input
+                            type="number"
+                            value={fluidDensity}
+                            onChange={(e) => setFluidDensity(Number(e.target.value))}
+                            style={{ marginLeft: "5px", width: "60px" }}
+                        />
+                    </label>
+                    <label style={{ display: "block", marginBottom: "5px" }}>
+                        Friction Factor:
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={pipeFrictionFactor}
+                            onChange={(e) => setPipeFrictionFactor(Number(e.target.value))}
+                            style={{ marginLeft: "5px", width: "60px" }}
+                        />
+                    </label>
+                </div>
+            </div>
             </div>
             {/* Scene Container */}
-            <div ref={mountRef} style={{ flex: 1, overflow: "hidden" }} 
+            <div ref={mountRef} style={{ flex: 1, overflow: "hidden" }}
                  onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} />
         </div>
     );
